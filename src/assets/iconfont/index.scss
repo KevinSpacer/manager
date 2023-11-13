@@ -1,0 +1,28 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 3831763 */
+  src: url("//at.alicdn.com/t/c/font_3831763_jzlxpr5ftl.woff2?t=1671419863655") format("woff2"),
+    url("//at.alicdn.com/t/c/font_3831763_jzlxpr5ftl.woff?t=1671419863655") format("woff"),
+    url("//at.alicdn.com/t/c/font_3831763_jzlxpr5ftl.ttf?t=1671419863655") format("truetype");
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// 图标列表
+$icons: (
+  "icon-discount": "\e60d",
+);
+
+// 循环遍历
+@each $name, $content in $icons {
+  .#{$name} {
+    &:before {
+      content: $content;
+    }
+  }
+}
