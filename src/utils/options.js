@@ -37,13 +37,13 @@ export const orderStatusOpts = ()=>[{
 
 // 订单类型
 export const orderTypeOpts = ()=>[{
-  label: '堂食',
+  label: 'EAT_IN',
   value: 'EAT_IN'
 }, {
-  label: '外卖',
+  label: 'TAKE_OUT',
   value: 'TAKE_OUT'
 }, {
-  label: '等取',
+  label: 'TAKE_FOOD',
   value: 'TAKE_FOOD'
 }]
 
