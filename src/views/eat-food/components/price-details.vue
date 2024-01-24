@@ -194,7 +194,7 @@ const getCurrOrderPirce = async () => {
 
     // 订单金额
     priceDetails.value.push({
-      label: `实付金额`,
+      label: `应付金额`,
       value: `$${(actuallyPaidMoney || 0).toFixed(2)}`,
       className: "total-price",
     });

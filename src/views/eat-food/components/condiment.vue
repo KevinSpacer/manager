@@ -37,101 +37,9 @@
         </div>
 
         <!-- 自定义调味品 -->
-        <div class="custom-condiment-box">
-          <p class="title">{{ $LANG_TEXT("自定义调味品") }}</p>
-          <div class="custom-condiment condiment ml-scrollbar">
-            <div
-              class="condiment-item"
-              v-for="(item, index) in customCondimentData"
-              :key="'item-custom' + index"
-              @click="openCustomDialog(item)"
-            >
-              <second-language
-                :firstText="item.name"
-                :secondText="item.nameLanguage"
-              ></second-language>
-            </div>
-          </div>
-        </div>
       </div>
-      <div class="right-container">
-        <div class="join-container">
-          <div class="header">
-            <span>{{ $LANG_TEXT("名称") }}</span>
-            <span>{{ $LANG_TEXT("价格") }}</span>
-            <span>{{ $LANG_TEXT("操作") }}</span>
-          </div>
-          <div class="title">
-            <p class="name">
-              <second-language
-                class="oneLineOver"
-                :firstText="routeParams.name"
-                :secondText="routeParams.nameLanguage"
-              ></second-language>
-            </p>
-            <p class="name">${{ routeParams.price }}</p>
-          </div>
-
-          <div class="join-list ml-scrollbar">
-            <!-- 常规 -->
-            <div
-              class="list-item"
-              v-for="(item, index) in sureNormal"
-              :key="'car-item' + index"
-            >
-              <div class="product-name">
-                <second-language
-                  class="oneLineOver"
-                  :firstText="item.name"
-                  :secondText="item.nameLanguage || item.name"
-                ></second-language>
-              </div>
-              <p class="product-price">${{ item.price }}</p>
-              <p class="product-action" @click="changeCondiment(item)">
-                <el-icon>
-                  <Delete />
-                </el-icon>
-              </p>
-            </div>
-
-            <!-- 自定义 -->
-            <div
-              class="list-item"
-              v-for="(item, index) in chooseCustomConds"
-              :key="'car-item' + index"
-            >
-              <div class="product-name">
-                <second-language
-                  class="oneLineOver"
-                  :firstText="item.name"
-                  :secondText="item.nameLanguage || item.name"
-                ></second-language>
-              </div>
-              <p class="product-price">${{ item.price }}</p>
-              <p
-                class="product-action"
-                @click="changeCondiment(item, 'delete', index)"
-              >
-                <el-icon>
-                  <Delete />
-                </el-icon>
-              </p>
-            </div>
-          </div>
-
-          <div class="tool-btn">
-            <el-button type="danger" @click="router.go(-1)">
-              {{ $LANG_TEXT("退出") }}
-            </el-button>
-            <el-button type="warning" @click="cancelAll">
-              {{ $LANG_TEXT("取消全部") }}
-            </el-button>
-            <el-button @click="condimentConfirm">
-              {{ $LANG_TEXT("确认") }}
-            </el-button>
-          </div>
-        </div>
-      </div>
+        <!-- 常规 -->
+        <!-- 自定义 -->
     </div>
   </div>
 
@@ -183,7 +91,7 @@
               ></el-input>
             </el-form-item>
           </el-form>
-        </div>
+        </div>condiment
         <div class="number-keyboard">
           <keyboard-number
             @confirm="numberDialogConfirm"
@@ -208,6 +116,7 @@ import {
   watch,
   computed,
   nextTick,
+  inject,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import tabScroll from "@/components/tab-scroll";
@@ -303,7 +212,7 @@ const getCustomPriceData = async () => {
 };
 
 // 要加入购物车的调味品
-const beforeCarCondimentIds = ref([]);
+let beforeCarCondimentIds = ref([]);
 const beforeCarCondiment = computed(() => {
   const chooseIds = beforeCarCondimentIds.value;
   // 标准
@@ -346,8 +255,10 @@ const changeCondiment = (item, type, currIndex) => {
     // 已加入ID
     if (beforeCarCondimentIds.value.includes(id)) {
       beforeCarCondimentIds.value.splice(index, 1);
+      condimentConfirm(dishValue.value);
     } else {
       beforeCarCondimentIds.value.push(id);
+      condimentConfirm(dishValue.value);
     }
   }
 
@@ -453,10 +364,10 @@ const condimentResult = computed(() => {
   return [...spices_condiment, ...chooseCustomConds.value];
 });
 
-// 最终确认结果
-const condimentConfirm = () => {
+// 最终确认结果 by zizhen guo
+const condimentConfirm = (dishValue) => {
   // addedToCart[routeParams.carIndex].dishesSpicesList = condimentResult.value;
-
+    console.log(dishValue);
   // 处理调味品 至 自定义调味品
   const condiment_custom = sureNormal.value.map((item) => {
     const classItem =
@@ -467,7 +378,7 @@ const condimentConfirm = () => {
       price: item.price,
     };
   });
-  addedToCart[routeParams.carIndex].customDishesSpicesList = [
+  addedToCart[dishValue].customDishesSpicesList = [
     ...condiment_custom,
     ...chooseCustomConds.value,
   ];
@@ -475,7 +386,8 @@ const condimentConfirm = () => {
   // console.log(sureNormal.value)
   // console.log(condiment_custom)
   // console.log(addedToCart)
-  router.go(-1);
+  // keep current page by zizhen guo 
+  //router.go(-1);
 };
 
 // 回显调味品数据 废弃
@@ -498,6 +410,14 @@ const callBackData = () => {
     ...chooseCustomConds.value.map((item) => item.id),
   ];
 };
+// define a index to receive value by zizhen guo
+const dishValue = inject('index');
+watch(dishValue,
+  (nVal) => {
+    console.log("i am dish value changed " + nVal);
+    beforeCarCondimentIds.value = []
+  }
+);
 
 // 取消全部
 const cancelAll = () => {
@@ -546,19 +466,16 @@ onMounted(() => {
 }
 .condiment-container {
   height: 100%;
-  display: grid;
-  grid-template-rows: 55px 1fr;
-
+  flex-direction: column;
+  align-items: end;
   .condiment-box {
-    display: grid;
-    grid-template-columns: 1fr 400px;
+    // display: grid;
+    // grid-template-columns: 100px;
     height: 100%;
     overflow: hidden;
 
     .left-container {
       background-color: #f9f9f9;
-      display: grid;
-      grid-template-rows: 400px 1fr;
       height: 100%;
       overflow: hidden;
 
@@ -575,7 +492,7 @@ onMounted(() => {
       }
       .condiment {
         @extend .condiment_;
-        height: calc(100% - 20px);
+        height: calc(100% - 300px);
       }
     }
 
@@ -603,7 +520,7 @@ onMounted(() => {
           flex-direction: column;
           flex-wrap: nowrap;
           overflow-y: auto;
-          height: 470px;
+          height: 250px;
 
           .list-item {
             display: grid;

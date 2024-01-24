@@ -157,6 +157,11 @@ const props = defineProps({
 		type: String,
 		default: "",
 	},
+	//已加入购物车的skuId
+	goodsSkuId: {
+		type: [String, Number],
+		default:"",
+	},
 });
 
 // 类型
@@ -525,10 +530,14 @@ const submitJoinCar = () => {
 	);
 
 	//本地使用 唯一标识
-	obj.skuId = `${obj.goodsId}-${
-		dataIds.join("-") + "-" + condmentDataIds.join("-")
-	}`;
-
+	console.log("before make a new skuid, the original id is " +props.goodsSkuId);
+	obj.skuId = props.goodsSkuId;
+	if(isEmpty.includes(props.goodsSkuId)){
+		console.log("make a new skuid for new item in the cart")
+		obj.skuId = `${obj.goodsId}-${
+		dataIds.join("-") + "-" + condmentDataIds.join("-")}`
+		console.log("new skuid for new item in the cart is "+ obj.skuId)
+	}
 	// 校验 提示语
 	const tips = currSpecList.value
 		.filter((item, index) => {
@@ -552,7 +561,7 @@ const submitJoinCar = () => {
 		});
 		return;
 	}
-	// console.log(obj)
+	console.log(obj)
 	emits("joinCar", obj);
 };
 
@@ -582,7 +591,7 @@ defineExpose({
 
 <style lang="scss" scoped>
 .dialog-join-car {
-	min-height: 500px;
+	min-height: 200px;
 	.spec-list {
 		display: flex;
 		flex-direction: column;

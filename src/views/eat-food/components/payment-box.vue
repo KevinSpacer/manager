@@ -4,25 +4,26 @@
     <!-- 支付方式 -->
     <div class="pay-type-box">
       <tag-method v-model="chooseType" :options="playTypeList"></tag-method>
-      <p class="give-change" v-if="showGive">
+      <p class="give-change" v-if="chooseType == 4">
         <span>{{ $LANG_TEXT("找零") }}：</span>
-        <span>${{ giveChange }}</span>
+        <span>${{ (playParams.payAmount - currAcount).toFixed(2)}}</span>
       </p>
     </div>
-
-    <el-form>
-      <el-form-item>
-        <el-input
-          class="big-keyboard"
-          size="large"
-          v-model.number="playParams.payAmount"
-        ></el-input>
-      </el-form-item>
-    </el-form>
-
-    <keyboard-number v-model="playParams.payAmount" @confirm="playOver">
-    </keyboard-number>
-
+    <div class="display" v-if="chooseType == 4">
+        <span>{{ $LANG_TEXT("Amount Received:      ") }}</span>
+        <span>${{ playParams.payAmount.toFixed(2) }}</span>
+    </div>
+    <div class="button" v-if="chooseType == 4">
+      <el-button size="large" type="primary" @click="payOverBtn(100)">$  100</el-button>
+      <el-button size="large" type="primary" @click="payOverBtn(50)">$  50</el-button>
+      <el-button size="large" type="primary" @click="payOverBtn(20)">$  20</el-button>
+      <el-button size="large" type="primary" @click="payOverBtn(10)">$  10</el-button>
+      <el-button size="large" type="primary" @click="payOverBtn(5)">$  5 </el-button>
+    </div>
+    <div class="direct-active">
+      <keyboard-number v-model="playParams.payAmount" @confirm="playOver" v-if="chooseType == 4">
+      </keyboard-number>
+    </div>
     <!-- 结账操作 -->
     <div class="direct-active" v-if="showDirect">
       <el-button
@@ -36,10 +37,26 @@
       <el-button
         size="large"
         type="danger"
-        @click="printBill"
+        @click="printBill(0)"
         v-if="proxy.$isUseAuth('打印账单')"
       >
         {{ proxy.$LANG_TEXT("打印账单") }}
+      </el-button>
+      <el-button
+        size="large"
+        type="danger"
+        @click="printBill(1)"
+        v-if="proxy.$isUseAuth('打印账单')"
+      >
+        {{ proxy.$LANG_TEXT("English Receipt") }}
+      </el-button>
+      <el-button
+        size="large"
+        type="danger"
+        @click="printBill(2)"
+        v-if="proxy.$isUseAuth('打印账单')"
+      >
+        {{ proxy.$LANG_TEXT("中英账单") }}
       </el-button>
       <el-button size="large" type="danger" @click="returnBack">
         {{ proxy.$LANG_TEXT("退出") }}
@@ -156,6 +173,9 @@ const chooseType = ref("");
 watch(
   () => chooseType.value,
   (nVal) => {
+    if(nVal==3){
+      playParams.payAmount = activeAcount;
+    }
     playTypeList.value.map((d) => (d.checked = d.id == nVal));
     const item = playTypeList.value.find((d) => d.id == nVal);
     playParams.paymentMethodName = item.name;
@@ -194,9 +214,20 @@ const playOver = async (call) => {
   emits("confirm", playParams);
 };
 
+//支付按钮
+const payOverBtn = async (value,call) => {
+  playParams.payAmount=value;
+  if (!openPayBtn.value) {
+    call ? call() : "";
+    return;
+  }
+  call ? call() : "";
+  //emits("confirm", playParams);
+};
 // 打印账单
-const printBill = async () => {
+const printBill = async (value) => {
   // proxy.$tipsPending();
+  playParams.receiptType = value;
   emits("printBill", playParams);
 };
 
@@ -207,11 +238,20 @@ const returnBack = () => {
 
 onMounted(() => {
   getPlayTypeList();
+  playParams.payAmount = 0;
 });
 </script>
 
 <style lang="scss" scoped>
 .pay-container {
+.display{
+  padding-bottom: 20px;
+  font-size: 20px;
+}
+.button{
+  display: grid;
+  grid-template-columns: repeat(5, auto);
+}
   .direct-active {
     margin: 15px 0;
   }

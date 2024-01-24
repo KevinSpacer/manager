@@ -132,6 +132,7 @@ import {
   nextTick,
   reactive,
   onMounted,
+  watch,
 } from "vue";
 import { testPositiveInteger } from "@/utils/regExp";
 import { useRouter } from "vue-router";
@@ -419,13 +420,27 @@ const customerDialogRef = ref();
 const eatType = ref("");
 // 打开客户信息弹窗
 const openCustomerDialog = (res) => {
-  customerDialogRef.value.openDialog();
-  eatType.value = res.params.type;
+  const eatIn = proxy.$isUseAuth("堂食");
+  console.log(eatIn);
+  const takeOut  = proxy.$isUseAuth("外卖");
+  console.log(eatIn);
+  console.log("I am in the method of open cus");
+  if(eatIn || takeOut){
+    customerDialogRef.value.openDialog()
+    eatType.value = res.params.type;
+  };
+  if(!eatIn && !takeOut){
+    eatType.value = res.params.type;
+    const result = {
+      waiterName:mainModule.userInfo.name
+    } 
+    customerConfirm(result);
+  };
 };
 
 // 确认
 const customerConfirm = async (result, call) => {
-  // console.log(result,call)
+  console.log("here is result value and call "+result,call)
   customerDialogRef.value.closeDialog();
   result.type = eatType.value;
   await clientAdd(result);
@@ -481,6 +496,20 @@ const closeWindow = () => {
   proxy.$closeProgram();
 };
 
+const checkJumpTakeOut = reactive(bodyMenuData);
+watch(
+  checkJumpTakeOut,
+  (nVal) => { 
+    console.log(nVal);
+    const eatIn = proxy.$isUseAuth("堂食");
+    console.log(eatIn);
+    const takeOut  = proxy.$isUseAuth("外卖");
+    console.log(eatIn);
+    if(!eatIn && !takeOut){
+      console.log("I am going to jump to")
+      doActive(nVal[0]);
+    }
+  });
 onMounted(() => {
   try {
     CefSharp.BindObjectAsync("webForm");

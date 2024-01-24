@@ -2,11 +2,12 @@
 <template>
   <div class="container">
     <!-- 订单明细 -->
-    <price-details
+    <div>
+      <price-details
       :orderId="routeParams.orderId"
       initiatePayType="DIRECT_PAY"
     ></price-details>
-
+    </div>
     <div class="sum-box">
       <payment-box
         :openPayBtn="true"
@@ -37,6 +38,15 @@ const route = useRoute();
 const router = useRouter();
 const routeParams = route.query;
 
+//
+const props = defineProps({
+	modelValue: {
+		type: [String, Number,Object],
+		default: "",
+	},
+});
+// 判空
+const isEmpty = ["", undefined, null];
 // 支付参数
 const payParams = ref({
   id: "",
@@ -61,7 +71,8 @@ const getOrderPayDetail = async () => {
     const curr = result[0];
     payParams.value = {
       id: curr.id,
-      payAmount: curr.payAmount,
+      // payAmount: curr.payAmount,
+      payAmount: 0,
     };
     orderDetail.value = curr;
     // console.log(payParams.value)
@@ -81,14 +92,14 @@ const payOver = async (params) => {
   try {
     await proxy.$storeDispatch("fetchPayOrderAmount", result);
     proxy.$message.success(proxy.$LANG_TEXT("结账完成"));
-    router.replace("/order");
+    router.push({ path: "/eatFood", query: {type:TAKE_FOOD}});
   } catch (error) {}
 };
 
 // 打印账单
 const printBill = (params) => {
   console.log(params); // 跳转打印
-  router.push({ path: "/printMod", query: { orderId: routeParams.orderId,type:2 } });
+  router.push({ path: "/printMod", query: { orderId: routeParams.orderId,type:2,autoPrinted:1,receiptType:params.receiptType}});
 };
 
 // 返回
@@ -103,6 +114,10 @@ const back = () => {
 };
 
 onMounted(async () => {
+  console.log(routeParams);
+  if(isEmpty.includes(routeParams)){
+    routeParams=modelValue
+  }
   if (routeParams.isInitiatePay != "YES") {
     await initiateOrderDirectPay();
   }
@@ -118,7 +133,7 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: flex-start;
   width: 1200px;
-  grid-template-columns: 1fr 570px;
+  grid-template-rows: 1fr 570px;
   margin: auto;
 
   .sum-box {

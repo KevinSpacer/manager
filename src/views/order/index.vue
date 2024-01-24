@@ -97,17 +97,17 @@
               <div class="line-1 item">
                 <div class="number">
                   <span v-if="item.daySerialNo">#{{ item.daySerialNo }}</span>
-                  <p v-else>
-                    <span class="staging-text" v-if="item.status == 'AWAIT'">{{
+                  <p>
+                    <span style="color: turquoise;" class="staging-text" v-if="item.status == 'AWAIT'">{{
                       $LANG_TEXT("暂存订单")
                     }}</span>
-                    <span v-if="item.status == 'UNDER_WAY'">{{
+                    <span style="color: chartreuse;" v-if="item.status == 'UNDER_WAY'">{{
                       $LANG_TEXT("进行中")
                     }}</span>
                     <span v-if="item.status == 'FINISH'">{{
-                      $LANG_TEXT("已完成")
+                      $LANG_TEXT("已付款")
                     }}</span>
-                    <span v-if="item.status == 'CANCELED'">{{
+                    <span style="color: crimson;" v-if="item.status == 'CANCELED'">{{
                       $LANG_TEXT("已取消")
                     }}</span>
                   </p>

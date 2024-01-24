@@ -320,7 +320,7 @@ const backMouseup = (e) => {
 
 // 点击返回
 const goBack = () => {
-  router.go(-1);
+  router.replace("/main");
 };
 
 // 控制键盘

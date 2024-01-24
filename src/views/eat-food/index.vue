@@ -1,82 +1,5 @@
 <template>
-  <div class="eat-food-box" @click="allHandCancel">
-    <div class="left-container">
-      <!-- 顶部分类、组合 -->
-      <div class="top-classify-box">
-        <!-- 分类 -->
-        <div class="classify-1">
-          <tab-scroll
-            v-model="chooseClassify"
-            :options="{
-              keyName: 'name',
-              valueName: 'id',
-            }"
-            :optionsSecond="{
-              keyName: 'nameLanguage',
-              valueName: 'id',
-            }"
-            :data="classifyList"
-          ></tab-scroll>
-        </div>
-        <!-- 组合 -->
-        <div class="classify-2">
-          <tab-scroll
-            v-model="chooseCombine"
-            :options="{
-              keyName: 'name',
-              valueName: 'id',
-            }"
-            :optionsSecond="{
-              keyName: 'nameLanguage',
-              valueName: 'id',
-            }"
-            :data="combineList"
-          ></tab-scroll>
-        </div>
-      </div>
-
-      <!-- 菜品列表 -->
-      <div class="product-list-box">
-        <!-- 菜谱列表 -->
-        <div class="product-list ml-scrollbar">
-          <div
-            class="product-item"
-            v-for="item in currCombine.goodsListFirst"
-            :key="item.goodsId"
-          >
-          <!-- binding a evnet of joinCar for each row of prodcut by zizhen guo 11/08/2023 -->
-            <Product
-              @changeCount="rightChangeCount($event, item)"
-              @changeSpec="changeSpec"
-              @pushNew="pushNewGoods"
-              :imageWidth="185"
-              productType="eatFood"
-              :detail="item"
-            />
-          </div>
-        </div>
-
-        <!-- 菜谱列表 -->
-        <div class="product-list ml-scrollbar">
-          <div
-            class="product-item"
-            v-for="item in currCombine.goodsListSecond"
-            :key="item.goodsId"
-          >
-          <!-- binding a evnet of joinCar by zizhen guo 11/08/2023 -->
-            <Product
-              @changeCount="rightChangeCount($event, item)"
-              @changeSpec="changeSpec"
-              @pushNew="pushNewGoods"    
-              :imageWidth="185"
-              productType="eatFood"
-              :detail="item"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-
+  <div class="eat-food-box">
     <!-- 右侧购物车菜单 -->
     <div class="right-container ml-scrollbar">
       <!-- 购物车 -->
@@ -85,10 +8,7 @@
         <!-- 堂食 -->
         <div class="top-show-info" v-if="routeParams.type == 'EAT_IN'">
           <!-- @click.stop="openToolDialog('updatePeopleQuantity')" -->
-          <div
-            class="peopel btn oneLineOver"
-            @click.stop="openPeopelDialog('peopel')"
-          >
+          <div class="peopel btn oneLineOver" @click.stop="openPeopelDialog('peopel')">
             <span>{{ $LANG_TEXT("人数") }}：</span>
             <span>{{ routeParams.peopleQuantity }}</span>
           </div>
@@ -96,9 +16,9 @@
             <span>{{ $LANG_TEXT("座位") }}：</span>
             <span>{{ routeParams.location }}</span>
           </div>
-          <div class="waiter btn oneLineOver" @click="openWaiterNameDialog">
-            <span>{{ $LANG_TEXT("服务员") }}：</span>
-            <span>{{ routeParams.waiterName }}</span>
+          <div class="waiter btn oneLineOver" @click="openTypeChangeDialog">
+            <span>{{ $LANG_TEXT("类型") }}：</span>
+            <span>{{ routeParams.type == 'EAT_IN' ? "堂吃":"" }}</span>
           </div>
         </div>
         <!-- 客户、终端号、服务员 -->
@@ -108,16 +28,17 @@
             <span>{{ $LANG_TEXT("客户") }}：</span>
             <span>{{ routeParams.userName }}</span>
           </div>
-          <div
-            class="intercept btn oneLineOver"
-            @click.stop="openCustomerDialog"
-          >
+          <div class="intercept btn oneLineOver" @click.stop="openCustomerDialog">
             <span>{{ $LANG_TEXT("号码") }}：</span>
             <span>{{ routeParams.contactWay }}</span>
           </div>
-          <div class="waiter btn oneLineOver" @click="openWaiterNameDialog">
-            <span>{{ $LANG_TEXT("服务员") }}：</span>
-            <span>{{ routeParams.waiterName }}</span>
+          <div class="waiter btn oneLineOver" @click="openTypeChangeDialog">
+            <span>{{ $LANG_TEXT("类型") }}：</span>
+            <span>{{ routeParams.type == 'TAKE_FOOD' ? "等取":"外送" }}</span>
+          </div>
+          <div class="waiter btn oneLineOver" @click="openCustomerDialog">
+            <span>{{ $LANG_TEXT("地址") }}：</span>
+            <span>{{ routeParams.address }}</span>
           </div>
         </div>
 
@@ -136,28 +57,15 @@
             <div class="table-list ml-scrollbar">
               <div v-if="addedToCart.length">
                 <!-- 菜品 -->
-                <div
-                  class="list-item"
-                  :class="{ active: chooseCarGoodsIndex === index }"
-                  v-for="(item, index) in addedToCart"
-                  :key="'car-item' + index"
-                >
+                <div class="list-item" :class="{ active: chooseCarGoodsIndex === index }"
+                  v-for="(item, index) in addedToCart" :key="'car-item' + index">
                   <!-- 菜品、套餐 -->
                   <div class="first-item">
-                    <div
-                      class="product-name"
-                      @click.stop="changeCarListItem(index)"
-                    >
-                      <second-language
-                        class="oneLineOver"
-                        :firstText="item.name"
-                        :secondText="item.nameLanguage || item.name"
-                      ></second-language>
+                    <div class="product-name" @click.stop="changeCarListItem(index)">
+                      <second-language class="oneLineOver" :firstText="item.name"
+                        :secondText="item.nameLanguage || item.name"></second-language>
                     </div>
-                    <div
-                      class="product-status"
-                      @click.stop="changeCarListItem(index)"
-                    >
+                    <div class="product-status" @click.stop="changeCarListItem(index)">
                       {{ $LANG_TEXT(item.orderType ? "已下单" : "") }}
                     </div>
                     <div class="product-num">
@@ -165,47 +73,31 @@
                       <!-- {{isActionOrder}}
                       {{item.orderType}}
                       {{proxy.$isUseAuth('删除菜品')}} -->
-                      <number-change
-                        v-if="isActionOrder && !item.orderType"
-                        iconSize="14px"
-                        @changeCount="carListChangeCount($event, item, index)"
-                        :addDisabled="item.addDisabled"
-                        v-model="item.goodsQuantity"
-                      ></number-change>
+                      <number-change v-if="isActionOrder && !item.orderType" iconSize="14px"
+                        @changeCount="carListChangeCount($event, item, index)" :addDisabled="item.addDisabled"
+                        v-model="item.goodsQuantity"></number-change>
                       <span v-else>{{ item.goodsQuantity }}</span>
                     </div>
-                    <div
-                      class="product-price"
-                      @click.stop="changeCarListItem(index)"
-                    >
+                    <div class="product-price" @click.stop="changeCarListItem(index)">
                       ${{ (item.price * item.goodsQuantity || 0).toFixed(2) }}
 
                       <!-- 折扣 -->
                       <span>
-                        <i
-                          class="iconfont icon-discount"
-                          v-if="item.isDiscount == 'YES'"
-                        ></i>
+                        <i class="iconfont icon-discount" v-if="item.isDiscount == 'YES'"></i>
                         <!-- 百分比 -->
-                        <span
-                          v-if="
-                            item.dishesDiscountType == 'PERCENT' &&
-                            Number(item.dishesDiscount) &&
-                            item.dishesDiscount != 100
-                          "
-                        >
+                        <span v-if="item.dishesDiscountType == 'PERCENT' &&
+                          Number(item.dishesDiscount) &&
+                          item.dishesDiscount != 100
+                          ">
                           (${{ item.discountPrice }})
                           <!-- (-{{
                             item.dishesDiscount
                           }}%) -->
                         </span>
                         <!-- 定额 -->
-                        <span
-                          v-if="
-                            item.dishesDiscountType == 'QUOTA' &&
-                            Number(item.dishesDiscount)
-                          "
-                        >
+                        <span v-if="item.dishesDiscountType == 'QUOTA' &&
+                          Number(item.dishesDiscount)
+                          ">
                           (${{ item.discountPrice }})
                           <!-- (-${{
                             item.dishesDiscount
@@ -215,20 +107,15 @@
                     </div>
                   </div>
 
-                  <!-- 底部 规格 -->
-                  <list-item
-                    :goodsDetail="item"
-                    @handClick="changeCarListItem(index)"
-                  ></list-item>
+                  <!-- 底部 规格  -->
+                  <!-- @handClick="changeCarListItem(index)" -->
+                  <list-item :goodsDetail="item" @deleteCondiments="deleteCondiment($event, index)"
+                    @changeSpec="changeSpec($event)"></list-item>
                 </div>
               </div>
 
               <!-- 缺省 -->
-              <el-empty
-                class="ml-empty"
-                v-else
-                :description="$LANG_TEXT('暂无数据')"
-              />
+              <el-empty class="ml-empty" v-else :description="$LANG_TEXT('暂无数据')" />
             </div>
 
             <!-- 统计明细 -->
@@ -248,12 +135,9 @@
                   goodsDetailed.discountType.value
                 }}
               </p>
-              <p
-                v-if="
-                  goodsDetailed.discountMannerText &&
+              <p v-if="goodsDetailed.discountMannerText &&
                   goodsDetailed.discountType.value
-                "
-              >
+                  ">
                 {{ $LANG_TEXT("折扣方式") }}：{{
                   $LANG_TEXT(goodsDetailed.discountMannerText)
                 }}
@@ -265,16 +149,12 @@
                 }}
               </p>
               <p>
-                <span
-                  >{{ $LANG_TEXT("服务费用") }}：{{
-                    goodsDetailed.serviceValue
-                  }}</span
-                >
-                <span v-if="goodsDetailed.serviceChargeTypeText"
-                  >（{{
-                    $LANG_TEXT(goodsDetailed.serviceChargeTypeText)
-                  }}）</span
-                >
+                <span>{{ $LANG_TEXT("服务费用") }}：{{
+                  goodsDetailed.serviceValue
+                }}</span>
+                <span v-if="goodsDetailed.serviceChargeTypeText">（{{
+                  $LANG_TEXT(goodsDetailed.serviceChargeTypeText)
+                }}）</span>
               </p>
               <p v-if="toolForm.tip.payAmount">
                 {{ $LANG_TEXT("小费") }}：{{ goodsDetailed.tipText }}
@@ -338,23 +218,37 @@
       <div class="tool-btn-area" v-if="isActionOrder">
         <!-- 分区 -->
         <div class="top-line">
-          <el-button
-            :disabled="isInPay"
-            v-if="proxy.$isUseAuth('自定义菜品')"
-            @click.stop="openCustomGoodsDialog"
-          >
+          <!-- 其他 -->
+          <el-button type="info" @click.stop="openOtherDialog">
+            <el-icon>
+              <More />
+            </el-icon>
+            {{ $LANG_TEXT("其他") }}
+          </el-button>
+          <!-- 打印送厨 -->
+          <el-button type="primary" @click="printJump" :disabled="!routeParams.orderId ||
+            eatFoodModule.chooseOrderType != 'orderCarData'
+            " v-if="proxy.$isUseAuth('送厨')">
+            <el-icon>
+              <Printer />
+            </el-icon>
+            {{ $LANG_TEXT("打印送厨") }}
+          </el-button>
+
+
+          <el-button :disabled="isInPay" v-if="proxy.$isUseAuth('自定义菜品')" @click.stop="openCustomGoodsDialog">
             {{ $LANG_TEXT("自定义菜品") }}
           </el-button>
-          <el-button
+          <!-- <el-button
             @click.stop="setCondiment"
             :disabled="
               chooseCarGoodsIndex === '' || chooseCartData.orderType || isInPay
             "
           >
             {{ $LANG_TEXT("调味品") }}
-          </el-button>
+          </el-button> -->
 
-          <div @click.stop>
+          <!-- <div @click.stop>
             <el-dropdown v-if="proxy.$isUseAuth('上菜方式')" trigger="click">
               <el-button
                 :disabled="
@@ -366,75 +260,28 @@
                 {{ $LANG_TEXT("上菜方式") }}
               </el-button>
               <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item
+                <el-dropdown-menu> -->
+          <!-- <el-dropdown-item 
                     v-for="item in serveDishesWayOpts"
                     :key="item"
                     @click.stop="editDishesWay(item)"
                     :disabled="routeParams.serveDishesWay == item"
-                    >{{ $LANG_TEXT(item || "无") }}</el-dropdown-item
-                  >
+                    >{{ $LANG_TEXT(item || "无") }}</el-dropdown-item> -->
+          <!-- <el-dropdown-item>5 min</el-dropdown-item>
+                    <el-dropdown-item>10 min</el-dropdown-item>
+                    <el-dropdown-item>15 min</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
-          </div>
+          </div> -->
 
-          <el-button
-            :disabled="
-              isInPay ||
-              (!routeParams.orderId && isEmpty.includes(chooseCarGoodsIndex))
-            "
-            v-if="proxy.$isUseAuth('备注')"
-            @click.stop="openToolDialog('remark')"
-          >
-            <el-icon><BellFilled /></el-icon>
+          <el-button :disabled="isInPay ||
+            (!routeParams.orderId && isEmpty.includes(chooseCarGoodsIndex))
+            " v-if="proxy.$isUseAuth('备注')" @click.stop="openToolDialog('remark')">
+            <el-icon>
+              <BellFilled />
+            </el-icon>
             {{ $LANG_TEXT("备注") }}
-          </el-button>
-          <!-- 处理订单、打折为空、不允许打折 -->
-          <el-button
-            type="warning"
-            v-if="proxy.$isUseAuth('折扣')"
-            :disabled="
-              !routeParams.orderId ||
-              (!isEmpty.includes(chooseCarGoodsIndex)
-                ? (chooseCartData.isDiscount == 'NO' ||
-                    !chooseCartData.isDiscount) & !!routeParams.orderId
-                : false) ||
-              isInPay
-            "
-            @click.stop="openToolDialog('discount')"
-          >
-            <el-icon><PriceTag /></el-icon>
-            {{ $LANG_TEXT("折扣") }}
-          </el-button>
-          <el-button
-            type="warning"
-            :disabled="
-              !routeParams.orderId ||
-              isEmpty.includes(toolForm.notCount.maLingMoney) ||
-              isInPay
-            "
-            @click.stop="openToolDialog('notCount')"
-          >
-            <el-icon><PriceTag /></el-icon>
-            {{ $LANG_TEXT("抹零") }}
-          </el-button>
-          <el-button
-            v-if="proxy.$isUseAuth('服务费')"
-            type="warning"
-            :disabled="!routeParams.orderId || isInPay"
-            @click.stop="openToolDialog('service')"
-          >
-            <el-icon><PriceTag /></el-icon>
-            {{ $LANG_TEXT("服务费") }}
-          </el-button>
-          <el-button
-            type="warning"
-            :disabled="!routeParams.orderId || isInPay"
-            @click.stop="openToolDialog('tip')"
-          >
-            <el-icon><PriceTag /></el-icon>
-            {{ $LANG_TEXT("小费") }}
           </el-button>
         </div>
 
@@ -457,20 +304,6 @@
               {{ $LANG_TEXT("免单") }}
             </el-button> -->
 
-            <div @click.stop>
-              <ml-btn
-                type="primary"
-                @submit="stagingOrder($event, 'storeOrder')"
-                :disabled="
-                  !addedToCart.length ||
-                  isInPay ||
-                  !orderSubmitData.shoppingGoodsList.length
-                "
-              >
-                <el-icon><List /></el-icon>
-                {{ $LANG_TEXT("暂存订单") }}
-              </ml-btn>
-            </div>
             <!-- <el-button
               v-if="proxy.$isUseAuth('分单')"
               type="primary"
@@ -490,32 +323,41 @@
             >
               {{ $LANG_TEXT("合单") }}
             </el-button> -->
-            <el-button
-              type="primary"
-              @click="printJump"
-              :disabled="
-                !routeParams.orderId ||
-                eatFoodModule.chooseOrderType != 'orderCarData'
-              "
-              v-if="proxy.$isUseAuth('送厨')"
-            >
-              <el-icon><Printer /></el-icon>
-              {{ $LANG_TEXT("打印送厨") }}
+            <!-- 折扣 -->
+            <el-button type="warning" @click.stop="opendiscountDialog">
+              <el-icon>
+                <Discount />
+              </el-icon>
+              {{ $LANG_TEXT("折扣") }}
             </el-button>
-
-            <el-button
-              v-if="proxy.$isUseAuth('付款')"
-              type="info"
-              :disabled="
-                !routeParams.orderId ||
-                !getTypeStatusBtn('DIRECT_PAY') ||
-                !isOrdered
-              "
-              @click.stop="jumpDirectPay"
-            >
-              <el-icon><WalletFilled /></el-icon>
+            <!-- 暂存订单 -->
+            <ml-btn type="primary" @submit="stagingOrder($event, 'storeOrder')" :disabled="!addedToCart.length ||
+              isInPay ||
+              !orderSubmitData.shoppingGoodsList.length
+              ">
+              <el-icon>
+                <List />
+              </el-icon>
+              {{ $LANG_TEXT("暂存订单") }}
+            </ml-btn>
+            <el-button v-if="proxy.$isUseAuth('付款')" type="info" :disabled="!routeParams.orderId ||
+              !getTypeStatusBtn('DIRECT_PAY') ||
+              !isOrdered
+              " 
+              @click.stop="openToolDialog('payment')">
+              <el-icon>
+                <WalletFilled />
+              </el-icon>
               {{ $LANG_TEXT("付款") }}
             </el-button>
+            <ml-btn @click.stop type="danger" class="playOrder" @submit="stagingOrder($event, 'playOrder')" :disabled="!addedToCart.length ||
+              !orderSubmitData.shoppingGoodsList.length
+              ">
+              <el-icon>
+                <List />
+              </el-icon>
+              {{ $LANG_TEXT("下单") }}
+            </ml-btn>
             <!-- <el-button
               type="info"
               :disabled="
@@ -541,19 +383,6 @@
               {{ $LANG_TEXT("分额付款") }}
             </el-button> -->
 
-            <el-button
-              v-if="proxy.$isUseAuth('取消订单')"
-              :disabled="!routeParams.orderId"
-              type="info"
-              @click.stop="openToolDialog('cancelingOrder')"
-            >
-              {{ $LANG_TEXT("取消订单") }}
-            </el-button>
-
-            <el-button @click.stop="openOtherDialog">
-              {{ $LANG_TEXT("其他") }}
-            </el-button>
-
             <!-- 禁用条件 -->
             <!--  
               ！！表示对非boolean true 的校正
@@ -561,7 +390,7 @@
 							未选择购物车菜品
 							正在支付
 						-->
-            <el-button
+            <!-- <el-button
               v-if="
                 proxy.$isUseAuth('删除菜品') ||
                 (!isEmpty.includes(chooseCarGoodsIndex) &&
@@ -577,71 +406,77 @@
             >
               <el-icon><Delete /></el-icon>
               {{ $LANG_TEXT("删除菜品") }}
-            </el-button>
-          </div>
-          <div class="right">
-            <div @click.stop>
-              <ml-btn
-                type="danger"
-                class="playOrder"
-                @submit="stagingOrder($event, 'playOrder')"
-                :disabled="
-                  !addedToCart.length ||
-                  !orderSubmitData.shoppingGoodsList.length
-                "
-              >
-                <el-icon><List /></el-icon>
-                {{ $LANG_TEXT("下单") }}
-              </ml-btn>
-            </div>
-
-            <el-button type="danger" @click.stop="router.go(-1)">
-              <el-icon><Warning /></el-icon>
+            </el-button> -->
+            <!-- <el-button type="danger" @click.stop="router.go(-1)">
+              <el-icon>
+                <Warning />
+              </el-icon>
               {{ $LANG_TEXT("退出") }}
-            </el-button>
+            </el-button> -->
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="left-container">
+      <!-- 顶部分类、组合 -->
+      <div class="top-classify-box">
+        <!-- 分类 -->
+        <div class="classify-1">
+          <tab-scroll v-model="chooseClassify" :options="{
+            keyName: 'name',
+            valueName: 'id',
+          }" :optionsSecond="{
+  keyName: 'nameLanguage',
+  valueName: 'id',
+}" :data="classifyList"></tab-scroll>
+        </div>
+        <!-- 组合 -->
+        <div class="classify-2">
+          <tab-scroll v-model="chooseCombine" :options="{
+            keyName: 'name',
+            valueName: 'id',
+          }" :optionsSecond="{
+  keyName: 'nameLanguage',
+  valueName: 'id',
+}" :data="combineList"></tab-scroll>
+        </div>
+      </div>
+
+      <!-- 菜品列表 -->
+      <div class="product-list-box">
+        <!-- 菜谱列表 -->
+        <div class="product-list ml-scrollbar">
+          <div class="product-item" v-for="item in currCombine.goodsListFirst" :key="item.goodsId">
+            <!-- binding a evnet of joinCar for each row of prodcut by zizhen guo 11/08/2023 -->
+            <Product @changeCount="rightChangeCount($event, item)" @changeSpec="changeSpec" @pushNew="pushNewGoods"
+              :imageWidth="185" productType="eatFood" :detail="item" />
+          </div>
+        </div>
+        <div>
+          <condiment v-if="chooseCarGoodsIndex.value === 0 || chooseCarGoodsIndex !== ''" />
+        </div>
+        <!--菜谱列表 2 row: deleted below part becasue only keep the one prodcut component all information is laoded by below component! by zizhen guo -->
       </div>
     </div>
   </div>
 
   <!-- 加入 购物车 -->
   <!-- below component is discard, by zizhen guo -->
-  <dialog-join-car
-    @joinCar="joinCarResult"
-    :goodsId="dialogProduct.goodsId"
-    :goodsType="dialogProduct.goodsType"
-    :playType="routeParams.type"
-    ref="joinCarRef"
-  >
+  <dialog-join-car @joinCar="joinCarResult($event)" :goodsId="dialogProduct.goodsId" :goodsType="dialogProduct.goodsType"
+    :goodsSkuId="dialogProduct.skuId" :playType="routeParams.type" ref="joinCarRef">
   </dialog-join-car>
 
   <!-- 自定义菜品 -->
-  <ml-dialog
-    ref="customGoodsRef"
-    :title="$LANG_TEXT('自定义菜品')"
-    @confirm="customGoodsConfirm"
-  >
+  <ml-dialog ref="customGoodsRef" :title="$LANG_TEXT('自定义菜品')" @confirm="customGoodsConfirm">
     <template #content>
-      <ml-form
-        :model="customGoodsParams"
-        :rules="customGoodsRules"
-        ref="customGoodsFormRef"
-        :showBtn="false"
-      >
+      <ml-form :model="customGoodsParams" :rules="customGoodsRules" ref="customGoodsFormRef" :showBtn="false">
         <template #form>
           <el-form-item prop="name" :label="$LANG_TEXT('菜品名称')">
-            <el-input
-              :placeholder="$LANG_TEXT('请先输入菜品名称')"
-              v-model="customGoodsParams.name"
-            ></el-input>
+            <el-input :placeholder="$LANG_TEXT('请先输入菜品名称')" v-model="customGoodsParams.name"></el-input>
           </el-form-item>
           <el-form-item prop="price" :label="$LANG_TEXT('菜品价格')">
-            <el-input
-              type="number"
-              :placeholder="$LANG_TEXT('请先输入菜品价格')"
-              v-model="customGoodsParams.price"
-            ></el-input>
+            <el-input type="number" :placeholder="$LANG_TEXT('请先输入菜品价格')" v-model="customGoodsParams.price"></el-input>
           </el-form-item>
         </template>
       </ml-form>
@@ -649,33 +484,36 @@
   </ml-dialog>
 
   <!-- 功能窗口 -->
-  <ml-dialog
-    ref="toolDialogRef"
-    :width="toolDialogWidthObj[toolDialogType] || '50%'"
-    :title="$LANG_TEXT(toolDialogTitleObj[toolDialogType])"
-    @confirm="toolDialogConfirm"
-    @cancel="toolCancel"
+  <ml-dialog ref="toolDialogRef" :width="toolDialogWidthObj[toolDialogType] || '50%'"
+    :title="$LANG_TEXT(toolDialogTitleObj[toolDialogType])" @confirm="toolDialogConfirm" @cancel="toolCancel"
     :confirmText="$LANG_TEXT(toolDialoConfirmTextObj[toolDialogType])"
     :cancelText="$LANG_TEXT(toolDialoCancelTextObj[toolDialogType] || '取消')"
-  >
+    :showBtn="!toolDialogType == 'payment'">
     <template #content>
       <!-- 备注 -->
       <div v-if="toolDialogType == 'remark'">
-        <el-input
-          type="textarea"
-          rows="10"
-          v-model="toolForm.remark"
-        ></el-input>
+        <el-input type="textarea" rows="10" @click="drawer=true" v-model="toolForm.remark"></el-input>
+        <el-drawer 
+        v-model="drawer"
+        :size="'45%'"
+        :withHeader="false" 
+        :direction="'btt'"
+        :before-close="handleClose">
+          <div>
+            <soft-keyboard-number
+            :type="'multi'"
+            @update:modelValue="keyDown($event)"
+            @confirm="customerConfirmRemark">
+            </soft-keyboard-number>
+          </div>
+        </el-drawer>
       </div>
 
       <!-- 折扣 -->
       <div v-if="toolDialogType == 'discount'">
-        <discount-mod
-          v-model:discountManner="toolForm.discountManner"
-          :showProduct="!isEmpty.includes(chooseCarGoodsIndex)"
-          v-model="toolForm.discount"
-          @numberConfirm="discountNumberConfirm"
-        ></discount-mod>
+        <discount-mod v-model:discountManner="toolForm.discountManner"
+          :showProduct="!isEmpty.includes(chooseCarGoodsIndex)" v-model="toolForm.discount"
+          @numberConfirm="discountNumberConfirm"></discount-mod>
       </div>
 
       <!-- 抹零 -->
@@ -705,10 +543,7 @@
 
       <!-- 分额付款 -->
       <div v-if="toolDialogType == 'partialPay'">
-        <partial-pay-mod
-          v-model="toolForm.partialPay"
-          :price="paidAmount"
-        ></partial-pay-mod>
+        <partial-pay-mod v-model="toolForm.partialPay" :price="paidAmount"></partial-pay-mod>
       </div>
 
       <!-- 取消订单 -->
@@ -720,44 +555,33 @@
       <div v-if="toolDialogType == 'freeCharge'">
         <free-order v-model="toolForm.freeChargeReason"></free-order>
       </div>
+      <!-- 付款页面 -->
+      <div v-if="toolDialogType == 'payment'">
+        <payment v-model="routeParams"></payment>
+      </div>
     </template>
   </ml-dialog>
 
   <!-- 人数键盘弹窗 -->
-  <ml-dialog
-    :showBtn="false"
-    ref="peopelDialogRef"
-    :title="$LANG_TEXT(peopelDialogTitles[peopelType])"
-  >
+  <ml-dialog :showBtn="false" ref="peopelDialogRef" :title="$LANG_TEXT(peopelDialogTitles[peopelType])">
     <template #content>
       <div class="number-dialog-box">
         <div class="input-box">
           <el-form>
             <el-form-item>
-              <el-input
-                class="big-keyboard"
-                v-model.number="peopelValue"
-              ></el-input>
+              <el-input class="big-keyboard" v-model.number="peopelValue"></el-input>
             </el-form-item>
           </el-form>
         </div>
         <div class="number-keyboard">
-          <soft-keyboard-number
-            @confirm="peopelDialogConfirm"
-            v-model="peopelValue"
-          ></soft-keyboard-number>
+          <soft-keyboard-number @confirm="peopelDialogConfirm" v-model="peopelValue"></soft-keyboard-number>
         </div>
       </div>
     </template>
   </ml-dialog>
 
   <!-- 座位键盘弹窗 -->
-  <ml-dialog
-    width="595px"
-    :showBtn="false"
-    ref="seatDialogRef"
-    :title="$LANG_TEXT('更新座位')"
-  >
+  <ml-dialog width="595px" :showBtn="false" ref="seatDialogRef" :title="$LANG_TEXT('更新座位')">
     <template #content>
       <div class="number-dialog-box">
         <div class="input-box">
@@ -768,34 +592,19 @@
           </el-form>
         </div>
         <div class="number-keyboard">
-          <soft-keyboard-number
-            type="seat"
-            @confirm="seatDialogConfirm"
-            v-model="seatValue"
-          ></soft-keyboard-number>
+          <soft-keyboard-number type="seat" @confirm="seatDialogConfirm" v-model="seatValue"></soft-keyboard-number>
         </div>
       </div>
     </template>
   </ml-dialog>
 
   <!-- 客户基本信息弹窗 -->
-  <customer-user-dialog
-    v-model:data="customerData"
-    @confirm="customerConfirm"
-    ref="customerDialogRef"
-  >
+  <customer-user-dialog v-model:data="customerData" @confirm="customerConfirm" ref="customerDialogRef">
   </customer-user-dialog>
 
   <!-- 提示 -->
-  <ml-dialog
-    width="595px"
-    ref="paidPayDialogRef"
-    :cancelText="$LANG_TEXT('取消支付')"
-    :confirmText="$LANG_TEXT('前往支付')"
-    :title="$LANG_TEXT('账单提示')"
-    @confirm="paidPayGo"
-    @cancel="cancelPaidPay"
-  >
+  <ml-dialog width="595px" ref="paidPayDialogRef" :cancelText="$LANG_TEXT('取消支付')" :confirmText="$LANG_TEXT('前往支付')"
+    :title="$LANG_TEXT('账单提示')" @confirm="paidPayGo" @cancel="cancelPaidPay">
     <template #content>
       <div class="paid-pay">
         <h4 class="tips">
@@ -805,25 +614,32 @@
     </template>
   </ml-dialog>
 
-  <!-- 服务员表格弹窗 -->
-  <ml-dialog
-    width="595px"
-    ref="waiterNameDialogRef"
-    :title="$LANG_TEXT('选择服务员')"
+<!-- 类型选择窗口 -->
+  <ml-dialog width="595px" ref="typeChangeDialogRef" :cancelText="$LANG_TEXT('取消支付')" :confirmText="$LANG_TEXT('前往支付')"
+    :title="$LANG_TEXT('类型选择')" 
     :showBtn="false"
-  >
+    @confirm="paidPayGo" @cancel="cancelPaidPay">
+    <template #content>
+      <div class="paid-pay">
+        <h4 class="tips">
+          {{ $LANG_TEXT("订单类型") }}
+        </h4>
+        <el-button @click="typeChange('EAT_IN')">堂吃</el-button>
+        <el-button @click="typeChange('TAKE_FOOD')">等取</el-button>
+        <el-button @click="typeChange('TAKE_OUT')">外送</el-button>
+      </div>
+    </template>
+  </ml-dialog>
+
+  <!-- 服务员表格弹窗 -->
+  <ml-dialog width="595px" ref="waiterNameDialogRef" :title="$LANG_TEXT('选择服务员')" :showBtn="false">
     <template #content>
       <div class="filter-box"></div>
 
       <div class="table-box">
         <!-- 表格 -->
-        <ml-table
-          @currentChange="currentChangeWaiterName"
-          ref="tableRef"
-          :tableData="tableData"
-          :templateData="templateData"
-          :pageParams="pageParams"
-        >
+        <ml-table @currentChange="currentChangeWaiterName" ref="tableRef" :tableData="tableData"
+          :templateData="templateData" :pageParams="pageParams">
           <template #waiterType="{ row }">
             {{
               $LANG_TEXT(userTypes.find((d) => d.value == row.waiterType).label)
@@ -833,74 +649,96 @@
       </div>
     </template>
   </ml-dialog>
-
-  <!-- 其他按钮弹窗 -->
-  <ml-dialog
-    width="375px"
-    ref="otherDialogRef"
-    :title="$LANG_TEXT('其他')"
-    :showBtn="false"
-  >
+  <!-- 折扣按钮弹窗  -->
+  <ml-dialog width="375px" ref="discountDialogRef" :title="$LANG_TEXT('折扣')" :showBtn="false">
     <template #content>
       <div class="other-btn-box">
-        <el-button
-          v-if="proxy.$isUseAuth('税率')"
-          type="warning"
-          :disabled="!routeParams.orderId || isInPay"
-          @click.stop="handClickOtherBtn(openToolDialog, 'taxRate')"
-        >
-          <el-icon><PriceTag /></el-icon>
+        <!-- 处理订单、打折为空、不允许打折 移至其他按钮下 -->
+        <el-button type="warning" v-if="proxy.$isUseAuth('折扣')" :disabled="!routeParams.orderId ||
+          (!isEmpty.includes(chooseCarGoodsIndex)
+            ? (chooseCartData.isDiscount == 'NO' ||
+              !chooseCartData.isDiscount) & !!routeParams.orderId
+            : false) ||
+          isInPay
+          " @click.stop="openToolDialog('discount')">
+          <el-icon>
+            <PriceTag />
+          </el-icon>
+          {{ $LANG_TEXT("折扣") }}
+        </el-button>
+        <el-button type="primary" :disabled="!routeParams.orderId ||
+          isEmpty.includes(toolForm.notCount.maLingMoney) ||
+          isInPay
+          " @click.stop="openToolDialog('notCount')">
+          <el-icon>
+            <PriceTag />
+          </el-icon>
+          {{ $LANG_TEXT("抹零") }}
+        </el-button>
+        <el-button v-if="proxy.$isUseAuth('服务费')" type="info" :disabled="!routeParams.orderId || isInPay"
+          @click.stop="openToolDialog('service')">
+          <el-icon>
+            <PriceTag />
+          </el-icon>
+          {{ $LANG_TEXT("服务费") }}
+        </el-button>
+        <el-button type="warning" :disabled="!routeParams.orderId || isInPay" @click.stop="openToolDialog('tip')">
+          <el-icon>
+            <PriceTag />
+          </el-icon>
+          {{ $LANG_TEXT("小费") }}
+        </el-button>
+      </div>
+    </template>
+  </ml-dialog>
+
+  <!-- 其他按钮弹窗 -->
+  <ml-dialog width="375px" ref="otherDialogRef" :title="$LANG_TEXT('其他')" :showBtn="false">
+    <template #content>
+      <div class="other-btn-box">
+        <el-button v-if="proxy.$isUseAuth('税率')" type="warning" :disabled="!routeParams.orderId || isInPay"
+          @click.stop="handClickOtherBtn(openToolDialog, 'taxRate')">
+          <el-icon>
+            <PriceTag />
+          </el-icon>
           {{ $LANG_TEXT("税率") }}
         </el-button>
-        <el-button
-          type="primary"
-          :disabled="!routeParams.orderId || isInPay"
-          @click.stop="handClickOtherBtn(openToolDialog, 'freeCharge')"
-        >
+        <el-button type="primary" :disabled="!routeParams.orderId || isInPay"
+          @click.stop="handClickOtherBtn(openToolDialog, 'freeCharge')">
           {{ $LANG_TEXT("免单") }}
         </el-button>
-        <el-button
-          v-if="proxy.$isUseAuth('分单')"
-          type="primary"
-          @click.stop="
-            handClickOtherBtn(() => {
-              $navigateTo('/eatFoodSplitOrder', routeParams);
-            })
-          "
-          :disabled="eatFoodModule.chooseOrderType != 'orderCarData' || isInPay"
-        >
+        <el-button v-if="proxy.$isUseAuth('分单')" type="primary" @click.stop="
+          handClickOtherBtn(() => {
+            $navigateTo('/eatFoodSplitOrder', routeParams);
+          })
+          " :disabled="eatFoodModule.chooseOrderType != 'orderCarData' || isInPay">
           {{ $LANG_TEXT("菜品分单") }}
         </el-button>
 
-        <el-button
-          v-if="proxy.$isUseAuth('合单')"
-          type="primary"
-          :disabled="!routeParams.orderId || isInPay"
-          @click.stop="handClickOtherBtn(openToolDialog, 'consolidated')"
-        >
+        <el-button v-if="proxy.$isUseAuth('合单')" type="primary" :disabled="!routeParams.orderId || isInPay"
+          @click.stop="handClickOtherBtn(openToolDialog, 'consolidated')">
           {{ $LANG_TEXT("合单") }}
         </el-button>
-        <el-button
-          type="info"
-          :disabled="
-            !routeParams.orderId ||
-            !getTypeStatusBtn('AA_PAY') ||
-            routeParams.peopleQuantity == 0 ||
-            !isOrdered
-          "
-          @click.stop="handClickOtherBtn(openPeopelDialog, 'AA')"
-          ><el-icon><WalletFilled /></el-icon>
+        <el-button type="info" :disabled="!routeParams.orderId ||
+          !getTypeStatusBtn('AA_PAY') ||
+          routeParams.peopleQuantity == 0 ||
+          !isOrdered
+          " @click.stop="handClickOtherBtn(openPeopelDialog, 'AA')"><el-icon>
+            <WalletFilled />
+          </el-icon>
           {{ $LANG_TEXT("AA付款") }}
         </el-button>
-        <el-button
-          :disabled="
-            !routeParams.orderId || !getTypeStatusBtn('SHARE_PAY') || !isOrdered
-          "
-          type="info"
-          @click.stop="handClickOtherBtn(openToolDialog, 'partialPay')"
-        >
-          <el-icon><WalletFilled /></el-icon>
+        <el-button :disabled="!routeParams.orderId || !getTypeStatusBtn('SHARE_PAY') || !isOrdered
+          " type="info" @click.stop="handClickOtherBtn(openToolDialog, 'partialPay')">
+          <el-icon>
+            <WalletFilled />
+          </el-icon>
           {{ $LANG_TEXT("分额付款") }}
+        </el-button>
+        <!-- 取消订单 -->
+        <el-button v-if="proxy.$isUseAuth('取消订单')" :disabled="!routeParams.orderId" type="info"
+          @click.stop="openToolDialog('cancelingOrder')">
+          {{ $LANG_TEXT("取消订单") }}
         </el-button>
       </div>
     </template>
@@ -916,6 +754,7 @@ import {
   getCurrentInstance,
   computed,
   nextTick,
+  provide,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { testPositiveNumberFlot } from "@/utils/regExp";
@@ -934,6 +773,8 @@ import partialPayMod from "./components/partial-pay-mod.vue";
 import cancellingOrder from "./components/cancelling-order.vue";
 import freeOrder from "./components/free-order.vue";
 import customerUserDialog from "./components/customer-user-dialog.vue";
+import condiment from "./components/condiment.vue";
+import payment from "./direct-payment.vue"
 
 const { proxy } = getCurrentInstance();
 
@@ -1139,6 +980,7 @@ const toolDialogTitleObj = {
   consolidated: "合单",
   partialPay: "分额支付",
   cancelingOrder: "取消订单",
+  payment:"付款"
 };
 // 多功能弹窗确认文字
 const toolDialoConfirmTextObj = {
@@ -1233,9 +1075,9 @@ const currCombine = computed(() => {
     // }
     return item;
   });
-
-  chooseItem.goodsListFirst = result.filter((item, index) => !(index % 2));
-  chooseItem.goodsListSecond = result.filter((item, index) => index % 2);
+  // config all prodcuts displayed by order by zizhen guo 
+  chooseItem.goodsListFirst = result.filter((item, index) => !(index % 1));
+  // chooseItem.goodsListSecond = result.filter((item, index) => index % 2);
   // console.log(chooseItem);
   return chooseItem;
 });
@@ -1281,65 +1123,88 @@ const dialogProduct = ref({});
 
 // 右侧 选择规格
 const changeSpec = (detail) => {
+  console.log(detail);
+  console.log(detail.skuId);
   dialogProduct.value = detail;
   joinCarRef.value.openDialog();
 };
 
 // 加入新菜品
 const pushNewGoods = (goods) => {
+  console.log(goods);
   const items = addedToCart.value.filter(
     (item) => item.goodsId == goods.goodsId
   );
-  const goodsIndex = addedToCart.value.findIndex(
+  const hasSpicesList = addedToCart.value.findIndex(
     (item) =>
       !(item.customDishesSpicesList || []).length &&
       item.goodsId == goods.goodsId
   );
-
+  const Paid = addedToCart.value.findIndex(
+    (item) =>
+      !(item.status == "ALREADY") &&
+      item.goodsId == goods.goodsId
+  );
+  console.log(Paid);
+  console.log(hasSpicesList);
   // console.log(goods);
   // console.log(items);
   // console.log(goodsIndex);
   // 存在自定义调味品
-  if (goodsIndex !== -1) {
-    addedToCart.value[goodsIndex].goodsQuantity += 1;
-  } else {
+  if (Paid == -1) {
+    //已付，调味
     goods.goodsQuantity = 1;
-    addedToCart.value.push(goods);
+    const copiedItem = JSON.parse(JSON.stringify(goods));
+    delete copiedItem.customDishesSpicesList;
+    console.log(copiedItem);
+    addedToCart.value.push(copiedItem);
+  } else {
+    //有未付，无调味，加自己
+    if (hasSpicesList !== -1) {
+      if (Paid >= hasSpicesList) {
+        addedToCart.value[Paid].goodsQuantity += 1;
+      } else {
+        addedToCart.value[hasSpicesList].goodsQuantity += 1;
+      }
+    } else {
+      goods.goodsQuantity = 1;
+      const copiedItem = JSON.parse(JSON.stringify(goods));
+      delete copiedItem.customDishesSpicesList;
+      console.log(copiedItem);
+      addedToCart.value.push(copiedItem);
+    }
   }
 };
-
 // 规格弹窗 确认加入购物车
 const joinCarResult = (result) => {
   // 已加入购物车中是否存在该菜品
-
-  const isHave = addedToCart.value.find((d) => d.skuId == result.skuId);
-  
-  // if (isHave) {
-  //   // 增加数量
-  //   const index = addedToCart.value.findIndex((d) => d.skuId == result.skuId);
-  //   addedToCart.value[index].goodsQuantity += 1;
-  // } else {
-  result.goodsQuantity = 1;
-  addedToCart.value.push(result);
-  console.log(addedToCart);
-  // }
-  // console.log(addedToCart);
-  joinCarRef.value.closeDialog();
+  console.log("new spec is added into the chat ");
+  console.log(result);
+  let isHave = addedToCart.value.findIndex((d) => d.skuId == result.skuId);
+  console.log(isHave);
+  if (isHave == -1) {
+    result.goodsQuantity = 1;
+    addedToCart.value.push(result);
+    console.log(addedToCart);
+    joinCarRef.value.closeDialog();
+  } else {
+    result.goodsQuantity = 1;
+    addedToCart.value[isHave].dishesSpecificationList = result.dishesSpecificationList;
+    addedToCart.value[isHave].dishesSpicesList = result.dishesSpicesList;
+    console.log(addedToCart);
+    joinCarRef.value.closeDialog();
+  }
 };
 
 // 购物车列表
 // 监听数量变动
 const carListChangeCount = (count, item, index) => {
   setTimeout(async () => {
-
-
-    // by zizhen
-    console.log("I am clieked");
     // goodsType
     // DISHES:菜品、CUSTOM_DISHES:自定义菜品、SET_MEAL:套餐
 
-     console.log(item, index);
-     console.log(addedToCart);
+    console.log(item, index);
+    console.log(addedToCart);
 
     if (item.stockCount) {
       if (item.stockCount <= count) {
@@ -1381,9 +1246,9 @@ const carListChangeCount = (count, item, index) => {
     nextTick(() => {
       // 清除数据
       if (!item.goodsQuantity) {
-         console.log("清除数据");
-         console.log(item);
-         console.log(item.goodsQuantity);
+        console.log("清除数据");
+        console.log(item);
+        console.log(item.goodsQuantity);
         addedToCart.value.splice(index, 1);
       }
     });
@@ -1409,6 +1274,40 @@ const deleteDishes = async () => {
     addedToCart.value.splice(index, 1);
   }
 };
+//删除调味品
+const deleteCondiment = (value, index) => {
+  console.log(value);
+  console.log(index);
+  let specificationExist = value.item.dishesSpecificationAttributeList
+  let spiceExist = value.item.dishesSpicesAttributeList
+  let condiIndex = value.index;
+  console.log("list item  is " + specificationExist);
+  console.log("list item  is " + spiceExist);
+  console.log("list item  is " + condiIndex);
+  if (specificationExist) {
+    delete addedToCart.value[index].dishesSpecificationList
+    //addedToCart.value[index].dishesSpecificationList = addedToCart.value[index].dishesSpecificationList.filter(item => item);
+  }
+  if (spiceExist) {
+    console.log("checek white rice is run")
+    delete addedToCart.value[index].dishesSpicesList;
+    //addedToCart.value[index].dishesSpicesList = addedToCart.value[index].dishesSpicesList.filter(item => item);
+  }
+  if (isEmpty.includes(specificationExist && spiceExist)) {
+    console.log("check other condiment is run")
+    let condiName = value.item.name;
+    console.log(condiName);
+    let indexInSicesList = addedToCart.value[index].customDishesSpicesList.findIndex(item => item.name == condiName);
+    console.log(indexInSicesList);
+    delete addedToCart.value[index].customDishesSpicesList[indexInSicesList]
+    addedToCart.value[index].customDishesSpicesList = addedToCart.value[index].customDishesSpicesList.filter(item => item);
+  }
+};
+
+//修改之前在弹窗中选中的内容
+const changeCondiment = () => {
+
+}
 
 // 多功能按钮
 
@@ -1521,7 +1420,12 @@ const stagingOrder = async (call, type) => {
         await getOrderIdDetail(res.result);
         // 重置
         addedToCart.value = [];
-        router.replace("/order");
+        // direct jump to payment page when 下单 click
+        //router.replace("/order");
+        // navigatoPayTo("/eatFoodDirectPayment", routeParams);
+        router.push({ path: "/printMod", query: { orderId: routeParams.orderId, type: 0, autoPrinted: 1 } });
+
+        openToolDialog('payment')
       });
   } catch (error) {
     call();
@@ -1635,7 +1539,6 @@ const changeCarListItem = (index) => {
 
   console.log("product name is selected with index is " + index)
 
-
   if (chooseCarGoodsIndex.value === "") {
     chooseCarGoodsIndex.value = index;
     return;
@@ -1647,6 +1550,7 @@ const changeCarListItem = (index) => {
   }
 };
 
+provide('index', chooseCarGoodsIndex);
 // 购物车当前选择数据
 const chooseCartData = computed(() => {
   const index = chooseCarGoodsIndex.value;
@@ -1668,12 +1572,12 @@ const setCondiment = () => {
   const item = addedToCart.value[chooseCarGoodsIndex.value];
   // console.log(item);
   const { name, nameLanguage, price } = item;
-  proxy.$navigateTo("eatFoodCondiment", {
-    carIndex: chooseCarGoodsIndex.value,
-    name,
-    nameLanguage: nameLanguage || name,
-    price,
-  });
+  // proxy.$navigateTo("eatFoodCondiment", {
+  //   carIndex: chooseCarGoodsIndex.value,
+  //   name,
+  //   nameLanguage: nameLanguage || name,
+  //   price,
+  // });
 };
 
 // 当前打开多功能类型
@@ -1790,8 +1694,8 @@ const notCountPrice = computed(() => {
   return toolForm.freeChargePrice
     ? toolForm.freeChargePrice
     : (
-        getTotalOrderAmount.value.payPrice - toolForm.notCount.maLingMoney
-      ).toFixed(2);
+      getTotalOrderAmount.value.payPrice - toolForm.notCount.maLingMoney
+    ).toFixed(2);
 });
 
 // 确认
@@ -2145,7 +2049,7 @@ const getTemporaryOrderShoppingList = async (id, getType) => {
     if (getType == "push") {
       setAddCarData(result);
     }
-  } catch (error) {}
+  } catch (error) { }
 };
 // 数据
 const orderCarData = ref([]);
@@ -2162,7 +2066,7 @@ const getOrderShoppingList = async (id, getType) => {
     if (getType == "push") {
       setAddCarData(result, "playOrder");
     }
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 赋值添加购物车数据
@@ -2288,9 +2192,8 @@ const toAddedCarData = (list, type) => {
         []
       );
       //本地使用 唯一标识
-      result.skuId = `${result.goodsId}-${
-        dataIds.join("-") + "-" + condmentDataIds.join("-")
-      }`;
+      result.skuId = `${result.goodsId}-${dataIds.join("-") + "-" + condmentDataIds.join("-")
+        }`;
     }
 
     // 打折金额
@@ -2411,7 +2314,7 @@ const getOrderIdDetail = async (id) => {
     }
 
     console.log("查询订单详情", toolForm);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 根据类型 判断状态显示 付款按钮
@@ -2860,6 +2763,13 @@ const otherDialogRef = ref();
 const openOtherDialog = () => {
   otherDialogRef.value.openDialog();
 };
+// 折扣弹窗
+// ref
+const discountDialogRef = ref();
+// 打开折扣弹窗
+const opendiscountDialog = () => {
+  discountDialogRef.value.openDialog();
+};
 // 点击弹窗按钮
 const handClickOtherBtn = (funCall, params) => {
   funCall(params);
@@ -2886,6 +2796,24 @@ const openWaiterNameDialog = () => {
   }
 };
 
+//打开更改类型的窗口
+const typeChangeDialogRef = ref();
+const openTypeChangeDialog = () => {
+  typeChangeDialogRef.value.openDialog();
+}
+const typeChange = (value) => {
+  console.log("type is selected is " +value);
+  switch(value){
+    case "EAT_IN":
+      routeParams.type = value;
+      typeChangeDialogRef.value.closeDialog();
+    case "TAKE_FOOD":
+      routeParams.type = value;
+      typeChangeDialogRef.value.closeDialog();
+    case "TAKE_OUT":
+      routeParams.type = value;
+      typeChangeDialogRef.value.closeDialog();
+  }};
 // 表格数据
 const tableData = ref({});
 
@@ -3023,6 +2951,25 @@ const allHandCancel = () => {
   chooseCarGoodsIndex.value = "";
 };
 
+//打开备注键盘
+const drawer = ref(false)
+const handleClose = () => {
+  drawer.value = false
+  toolForm.remark="";
+}
+const keyDown = (value) => {
+  toolForm.remark=value;
+}
+const customerConfirmRemark = () => {
+  drawer.value = false;
+};
+//检测是否自动付款
+const checkOpenPaymentBox = () => {
+  if(routeQuery.autoOpenPayment == 1){
+    openToolDialog('payment')
+  };
+};
+setTimeout(checkOpenPaymentBox,500);
 onMounted(() => {
   init();
 });
@@ -3030,9 +2977,10 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 $grayColor: #fdfdfd;
+
 .eat-food-box {
   display: grid;
-  grid-template-columns: calc(100vw - 600px) 600px;
+  grid-template-columns: 500px calc(100vw - 500px);
   height: 100%;
   user-select: none;
 
@@ -3049,16 +2997,17 @@ $grayColor: #fdfdfd;
 
     .product-list-box {
       .product-list {
-        // display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        justify-content: center;
+        //config how many products dispalyed in the menu by zizhen guo
+        display: grid;
+        grid-template-columns: auto auto auto auto auto;
+        justify-content: left;
         align-items: center;
         justify-items: center;
         white-space: nowrap;
         overflow-x: auto;
         padding: 0 5px;
         box-sizing: border-box;
-        // margin-bottom: 5px;
+        margin-bottom: 350px;
 
         &:nth-last-child(1) {
           .product-item {
@@ -3066,11 +3015,14 @@ $grayColor: #fdfdfd;
             padding-top: 10px;
           }
         }
+
         .product-item {
-          width: 185px;
+          width: 120px;
+          height: 70px;
           display: inline-block;
           padding-bottom: 15px;
-          margin-right: 15px;
+          margin-right: 5px;
+
           &:nth-last-child(1) {
             margin-right: 0;
           }
@@ -3099,12 +3051,13 @@ $grayColor: #fdfdfd;
     // 购物车
     .car-menu-box {
       .top-show-info {
-        display: grid;
+        display: flex;
         flex-direction: row;
-        grid-template-columns: repeat(3, 1fr);
-        justify-items: center;
-
-        > div {
+        flex-wrap: wrap;
+        //grid-template-columns: repeat(3, 1fr);
+        justify-content: space-between;
+        row-gap: 5px;
+        >div {
           width: auto;
           height: 40px;
           color: white;
@@ -3119,14 +3072,17 @@ $grayColor: #fdfdfd;
           &.peopel {
             background-color: #2b68fe;
           }
+
           &.intercept {
             background-color: #ffa001;
           }
+
           &.waiter {
             background-color: #f20808;
           }
         }
       }
+
       .car-container {
         margin-top: 15px;
 
@@ -3154,7 +3110,7 @@ $grayColor: #fdfdfd;
           overflow: hidden;
 
           .table-list {
-            height: 400px;
+            height: 550px;
             font-size: 15px;
             overflow-y: auto;
 
@@ -3163,6 +3119,7 @@ $grayColor: #fdfdfd;
                 width: 15px;
               }
             }
+
             .list-item {
               // padding: 10px 0;
               transition: 300ms;
@@ -3197,11 +3154,14 @@ $grayColor: #fdfdfd;
                 align-items: center;
                 justify-content: center;
               }
+
               .product-price {
                 width: 100%;
-                > span {
+
+                >span {
                   font-size: 14px;
                   margin-left: 5px;
+
                   .icon-discount {
                     font-size: 14px;
                   }
@@ -3223,6 +3183,7 @@ $grayColor: #fdfdfd;
 
             .total-price {
               font-weight: bold;
+
               span {
                 color: red;
               }
@@ -3254,15 +3215,16 @@ $grayColor: #fdfdfd;
       width: 100%;
 
       .customMarign {
-        > button,
-        > div {
+
+        >button,
+        >div {
           width: 90%;
           height: 50px;
           margin-right: 15px;
           margin-bottom: 15px;
           margin-left: 0px;
 
-          > button {
+          >button {
             width: 100%;
             height: 100%;
             margin: 0;
@@ -3271,7 +3233,8 @@ $grayColor: #fdfdfd;
           .el-dropdown {
             width: 100%;
             height: 100%;
-            > button {
+
+            >button {
               width: 100%;
               height: 100%;
             }
@@ -3282,7 +3245,7 @@ $grayColor: #fdfdfd;
       .top-line {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        grid-template-rows: repeat(2, 60px);
+        //grid-template-rows: repeat(2, 60px);
         justify-items: start;
         align-items: center;
 
@@ -3290,13 +3253,12 @@ $grayColor: #fdfdfd;
       }
 
       .bottom {
-        display: grid;
-        grid-template-columns: 3fr 1fr;
+
 
         .left {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          grid-template-rows: repeat(3, 60px);
+          grid-template-columns: repeat(4, 1fr);
+          grid-template-rows: repeat(2, 60px);
           justify-items: start;
           align-items: center;
           @extend .customMarign;
@@ -3306,9 +3268,11 @@ $grayColor: #fdfdfd;
           display: grid;
           grid-template-rows: 118px 1fr;
           justify-items: start;
+
           .playOrder {
             height: 108px;
           }
+
           @extend .customMarign;
         }
       }
@@ -3341,11 +3305,11 @@ $grayColor: #fdfdfd;
   display: grid;
   grid-template-columns: repeat(2, 150px);
   justify-content: center;
-  grid-template-rows: repeat(3, 60px);
+  grid-template-rows: repeat(4, 60px);
+
   button {
     width: 95%;
     height: 90%;
     margin: 2.5%;
   }
-}
-</style>
+}</style>

@@ -6,22 +6,17 @@
     v-for="(item, index) in showListData"
     :key="'list-box' + index"
   >
-    <div class="list-box-item">
+    <div class="list-box-item" @click.stop="handClick">
       <div class="item name">{{ item.name }}</div>
-      <div class="item price" v-if="showUnit">$ {{ item.showPrice }}</div>
-      <div>  
-      <el-icon v-if="goodsDetail.status == 'ON_SHELVES'">
-          <Delete @click="deleteCondiments(item,index)"/>
-      </el-icon>
-      </div>
-      <div>  
-      <el-icon v-if="goodsDetail.status == 'ON_SHELVES'">
-          <Edit @click="changeSpec(goodsDetail,item)"/>
-      </el-icon>
+      <div class="item status"></div>
+      <div class="item number" v-if="showUnit"></div>
+      <div class="item price" v-if="showUnit" >
+        <span v-if="showUnit">$</span>
+        <span> {{ item.showPrice * parentData.goodsQuantity || 0 }} </span>
       </div>
     </div>
 
-    <div
+    <!-- <div
 			class="list-child-item"
 			v-for="(child, i) in item.children"
 			:key="'item-child' + i"
@@ -37,7 +32,7 @@
 			<div class="item price">
 				<span v-if="child.price"> ${{ child.price }} </span>
 			</div>
-		</div>
+		</div> -->
   </div>
 
   <div
@@ -45,13 +40,13 @@
     @click.stop="handClick"
     v-if="parentData.serveDishesWay"
   >
-    <span class="textFold">{{ $LANG_TEXT("上菜方式") }}</span
+    <span class="textFold">{{ $LANG_TEXT("Serving Method") }}</span
     >：
     <span>{{ parentData.serveDishesWay }}</span>
   </div>
 
   <div class="other-item" @click.stop="handClick" v-if="parentData.remark">
-    <span class="textFold">{{ $LANG_TEXT("备注") }}</span
+    <span class="textFold">{{ $LANG_TEXT("Remarks") }}</span
     >：
     <span>{{ parentData.remark }}</span>
   </div>
@@ -70,7 +65,7 @@ import {
 import tabScroll from "@/components/tab-scroll";
 const { proxy } = getCurrentInstance();
 
-const emits = defineEmits(["deleteCondiments","changeSpec"]);
+const emits = defineEmits(["handClick"]);
 
 const props = defineProps({
   // 菜品、套餐信息
@@ -84,7 +79,7 @@ const props = defineProps({
     default:true
   }
 });
-const isEmpty = ["", undefined, null];
+
 // 数据
 const parentData = ref(props.goodsDetail);
 watch(
@@ -185,29 +180,16 @@ const showListData = computed(() => {
     });
     list.push(...specificationList);
   }
-  list.push(...dishesSpicesList,...customDishesSpicesList);
+  list.push(...customDishesSpicesList, ...dishesSpicesList);
   // console.log(goods);
   // console.log(list);
   // console.log(goodsQuantity);
   return list;
 });
 
-const deleteCondiments = (item,index) => {
-  console.log(item);
-  console.log(index);
-  let value = {
-    item,
-    index
-  }
-  console.log(value);
-  emits("deleteCondiments",value)
-}
-//变更spec, 只有规格和自定义调味变更时才emits 事件
-const changeSpec = (goodsDetail,value) => {
-  console.log(goodsDetail);
-  if(value.dishesSpecificationAttributeList || value.dishesSpicesAttributeList){
-    emits("changeSpec",goodsDetail);
-  }};
+const handClick = () => {
+  emits("handClick");
+};
 
 onMounted(() => {});
 </script>
@@ -230,10 +212,11 @@ onMounted(() => {});
   }
 
   .list-box-item {
+    font-size: 30px;
     box-sizing: border-box;
     padding-left: 20px;
     display: grid;
-    grid-template-columns: 290px 70px 40px 40px;
+    grid-template-columns: 1fr 80px 120px 150px;
 
     // &:active {
     // 	background-color: #0000001a;

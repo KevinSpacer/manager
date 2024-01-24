@@ -18,19 +18,21 @@
           :firstText="roomDetail.name"
           :secondText="roomDetail.nameLanguage || roomDetail.name"
         ></second-language>
-        <P class="ticket-address"  :firstText="roomDetail.name">{{roomDetail.address}}</P>
-        <p class="tips-line"> TEL: {{roomDetail.contactWay}}</p>
+        <P class="ticket-address"  :firstText="roomDetail.name" v-if="showAddress">{{roomDetail.address}}</P>
+        <p class="tips-line" v-if="showContact"> TEL: {{roomDetail.contactWay}}</p>
         <span class="day-number">#{{ orderDetail.daySerialNo }}</span>
       </div>
       <!-- 信息 -->
       <div class="info">
         <p v-if="orderDetail.type !== 'EAT_IN'">
-          <span>{{ $LANG_TEXT("座位") }}：</span>
+          <!-- <span>{{ $LANG_TEXT("座位") }}：</span> -->
+          <span>{{ $LANG_TEXT("Seat") }}：</span>
           <span>{{ orderDetail.location }}</span>
         </p>
         <p v-else>
-          <span>{{ $LANG_TEXT("客户") }}：</span>
-          <span>{{ orderDetail.userName }}</span>
+          <!-- <span>{{ $LANG_TEXT("客户") }}：</span> -->
+          <span>{{ $LANG_TEXT("Customer") }}：</span>
+          <span>{{ orderDetail.userName}}</span>
         </p>
         <p>
           {{
@@ -40,11 +42,13 @@
           }}
         </p>
         <p v-if="orderDetail.type == 'EAT_IN'">
-          <span>{{ $LANG_TEXT("人数") }}：</span>
+          <!-- <span>{{ $LANG_TEXT("人数") }}：</span> -->
+          <span>{{ $LANG_TEXT("No. of guests") }}：</span>
           <span>{{ orderDetail.peopleQuantity || 0 }}</span>
         </p>
         <p v-else>
-          <span>{{ $LANG_TEXT("电话号码") }}：</span>
+          <!-- <span>{{ $LANG_TEXT("电话号码") }}：</span> -->
+          <span>{{ $LANG_TEXT("Phone") }}：</span>
           <span>{{ orderDetail.contactWay || "" }}</span>
         </p>
       </div>
@@ -67,13 +71,20 @@
           >
             <div class="dishe">
               <p class="name">
+      <!-- select Language to display kitchen alwasys Chinese -->
                 <second-language
                   :firstText="item.name"
-                  :secondText="item.nameLanguage || item.name"
+                  :secondText="item.name || item.name"
+                  v-if="showEnCn==0"
+                ></second-language>
+                <second-language
+                  :firstText="item.nameLanguage"
+                  :secondText="item.nameLanguage || item.nameLanguage"
+                  v-if="showEnCn==1 || showEnCn==2"
                 ></second-language>
               </p>
               <p style="text-align: left;">{{ item.goodsQuantity }}</p>
-              <p class="price" style="text-align: left;">
+              <p class="price" style="text-align: left;" v-if="showPrice">
                 {{ item.price }}
                 <!-- 折扣 -->
                 <span v-if="item.dishesDiscount || item.dishesDiscount != 0">
@@ -106,15 +117,20 @@
               </p>
             </div>
             <!-- 规格 -->
-            <list-item :showUnit="false" :goodsDetail="item"></list-item>
-
+            <list-item-in-ticket :showUnit="false" :goodsDetail="item"></list-item-in-ticket>
+            <p v-if ="showEnCn==2">
+              <second-language
+                  :firstText="item.name"
+                  :secondText="item.name || item.name"
+                ></second-language>
+            </p>
           </div>
         </div>
       </div>
       <div class="info">
         <p v-if="orderDetail.remark">
           <span
-            >{{ isPrintOrder ? $LANG_TEXT("订单备注") : $LANG_TEXT("备注") }}:
+            >{{ isPrintOrder ? $LANG_TEXT("Order Remarks") : $LANG_TEXT("Remarks") }}:
             {{ orderDetail.remark }}</span
           >
         </p>
@@ -122,8 +138,8 @@
           <span
             >{{
               isPrintOrder
-                ? $LANG_TEXT("订单上菜方式")
-                : $LANG_TEXT("上菜方式")
+                ? $LANG_TEXT("Serving Method")
+                : $LANG_TEXT("Serving Method")
             }}: {{ $LANG_TEXT(orderDetail.serveDishesWay) }}</span
           >
         </p>
@@ -137,29 +153,30 @@
     <!-- info display for total and tax zizhen -->
     <div class="price-info dashed-top" v-if="showPrice">
       <p class="info-line allCount">
-        <span>{{ $LANG_TEXT("合计") }}</span>
+        <span>{{ $LANG_TEXT("Total") }}</span>
         <span>{{ printGoods.length }}</span>
         <span>{{ resultPrice.orderMoney.toFixed(2) -resultPrice.taxRateMoney.toFixed(2) }}</span>
       </p>
       <p class="info-line">
-        <span>{{ $LANG_TEXT("优惠金额") }}</span>
+        <!-- <span>{{ $LANG_TEXT("优惠金额") }}</span> -->
+        <span>{{ $LANG_TEXT("Discount Amount") }}</span>
         <span>{{
           (resultPrice.orderMoney - resultPrice.actuallyPaidMoney).toFixed(2)
         }}</span>
       </p>
       <p class="info-line" v-if="resultPrice.maLingType !== 'NO'">
-        <span>{{ $LANG_TEXT("抹零") }}</span>
+        <span>{{ $LANG_TEXT("MaLing") }}</span>
         <span>{{ $LANG_TEXT(maLingTypes[resultPrice.maLingType]) }}</span>
       </p>
       <p class="info-line" v-if="resultPrice.maLingMoney">
-        <span>{{ $LANG_TEXT("抹零金额") }}</span>
+        <span>{{ $LANG_TEXT("MaLing Amount") }}</span>
         <span>{{ resultPrice.maLingMoney.toFixed(2) }}</span>
       </p>
       <p
         class="info-line"
         v-if="resultPrice.cashDiscountMoney || resultPrice.orderDiscount"
       >
-        <span>{{ $LANG_TEXT("折扣") }}</span>
+        <span>{{ $LANG_TEXT("Discount") }}</span>
         <span v-if="resultPrice.cashDiscountMoney">
           {{ resultPrice.cashDiscountMoney.toFixed(2) }}
         </span>
@@ -169,7 +186,7 @@
       </p>
 
       <p class="info-line" v-if="resultPrice.serviceCharge">
-        <span>{{ $LANG_TEXT("服务费") }}</span>
+        <span>{{ $LANG_TEXT("Service Fee") }}</span>
         <span v-if="resultPrice.serviceChargeType == 'QUOTA'">
           {{ resultPrice.serviceCharge.toFixed(2) }}
         </span>
@@ -177,21 +194,22 @@
       </p>
 
       <p class="info-line" v-if="resultPrice.taxRate">
-        <span>{{ $LANG_TEXT("税率")}}({{resultPrice.taxRate}}%)</span>
-        <span> {{ resultPrice.taxRateMoney }} </span>
+        <span>{{ $LANG_TEXT("Tax Rate")}}({{resultPrice.taxRate}}%)</span>
+        <span> {{ resultPrice.taxRateMoney.toFixed(2) }} </span>
       </p>
       <p class="info-line" v-if="resultPrice.isFreeOrder !== 'NO'">
-        <span>{{ $LANG_TEXT("是否免单") }}</span>
+        <span>{{ $LANG_TEXT("Free Order") }}</span>
         <span>{{ $LANG_TEXT(isFreeOrderTypes[resultPrice.isFreeOrder]) }}</span>
       </p>
       <!-- 外卖 -->
       <p class="info-line" v-if="orderDetail.type == 'TAKE_OUT'">
-        <span>{{ $LANG_TEXT("外卖费用") }}</span>
+        <span>{{ $LANG_TEXT("Amount Package") }}</span>
         <span>{{ resultPrice.deliveryFeeValue }}</span>
       </p>
 
       <p class="info-line">
-        <span>{{ $LANG_TEXT("应付金额") }}</span>
+        <!-- <span>{{ $LANG_TEXT("应付金额") }}</span> -->
+        <span>{{ $LANG_TEXT("Amount Payable") }}</span>
         <span>{{ resultPrice.orderMoney.toFixed(2) }}</span>
       </p>
       <!-- <p class="info-line">
@@ -199,7 +217,7 @@
         <span>{{ resultPrice.actuallyPaidMoney.toFixed(2) }}</span>
       </p> -->
       <p class="info-line" v-if="payOrderList.length">
-        <span>{{ $LANG_TEXT("支付明细") }}</span>
+        <span>{{ $LANG_TEXT("Payment Details") }}</span>
         <span></span>
       </p>
       <div class="pay-list">
@@ -211,19 +229,18 @@
           <p>
             <span class="name" v-if="item.paymentMethodName">
               <second-language
-                :firstText="item.paymentMethodName"
+                :firstText="item.paymentMethodNameLanguage"
                 :secondText="item.paymentMethodNameLanguage"
               ></second-language>
             </span>
             <span class="name" v-else>
-              {{ $LANG_TEXT("金额") }}{{ index + 1 }}
-            </span>
+              {{ $LANG_TEXT("Unpayment") }}</span>
           </p>
           <span>{{ Number(item.payAmount).toFixed(2) }}</span>
         </div>
       </div>
       <p class="info-line" v-if="tipData.length">
-        <span>{{ $LANG_TEXT("小费明细") }}</span>
+        <span>{{ $LANG_TEXT("Details Tips") }}</span>
         <span></span>
       </p>
       <div class="pay-list">
@@ -240,8 +257,7 @@
               ></second-language>
             </span>
             <span class="name" v-else>
-              {{ $LANG_TEXT("金额") }}{{ index + 1 }}
-            </span>
+              {{ $LANG_TEXT("Unpayment") }}</span>
           </p>
           <span>{{ Number(item.payAmount).toFixed(2) }}</span>
         </div>
@@ -251,13 +267,20 @@
     <!-- 订单编号 -->
     <div class="order-id" v-if="showOrder">
       <p class="line">
-        <span>{{ $LANG_TEXT("下单时间") }}: </span>
+        <span>{{ $LANG_TEXT("Order Time") }}: </span>
         <span>{{ orderDetail.creationTime }}</span>
       </p>
       <p class="line">
-        <span>{{ $LANG_TEXT("订单编号") }}: </span>
+        <!-- <span>{{ $LANG_TEXT("订单编号") }}: </span> -->
+        <span>{{ $LANG_TEXT("No. Order") }}: </span>
         <span>{{ orderDetail.id }}</span>
       </p>
+      <p class="line">
+        <!-- <span>{{ $LANG_TEXT("订单编号") }}: </span> -->
+        <span>{{ $LANG_TEXT("Address") }}: </span>
+        <span>{{ orderDetail.address }}</span>
+      </p>
+
     </div>
 
     <!-- 提示语 -->
@@ -267,13 +290,14 @@
         <span>{{ roomDetail.contactWay }}</span>
       </p> -->
       <p>
-        <span>{{ $LANG_TEXT("欢迎下次光临") }}</span>
+        <span>{{ $LANG_TEXT("Thanks for your welcome") }}</span>
       </p>
     </div>
   </div>
 </template>
 <script setup>
-import listItem from "../../eat-food/components/list-item.vue";
+//import listItem from "../../eat-food/components/list-item.vue";
+import listItemInTicket from "../../print-mod/components/list-item-in-ticket.vue"
 import { orderTypeOpts, maLingTypes, isFreeOrderTypes } from "@/utils/options";
 
 import {
@@ -298,7 +322,7 @@ const roomDetail = computed(() => mainModule.roomDetail);
 const props = defineProps({
   goodsList: {
     type: Array,
-    defualt: () => [],
+    //defualt: () => [],
   },
   orderDetail: {
     type: Object,
@@ -328,24 +352,39 @@ const props = defineProps({
 
   showLogo: {
     type: Boolean,
-    defualt: false,
+    default: false,
   },
   showPrice: {
     type: Boolean,
-    defualt: false,
+    default: false,
   },
   showOrder: {
     type: Boolean,
-    defualt: false,
+    default: false,
   },
   showTips: {
     type: Boolean,
-    defualt: false,
+    default: false,
   },
   // 是否是打印订单
   isPrintOrder: {
     type: Boolean,
-    defualt: false,
+    default: false,
+  },
+  // 关闭价格
+  showAddress:{
+    type: Boolean,
+    default: true,
+  },
+  // 关闭电话
+    showContact:{
+    type: Boolean,
+    default: true,
+  },
+  // 关闭双语显示
+  showEnCn:{
+    type: Number,
+    default: false,
   },
 });
 

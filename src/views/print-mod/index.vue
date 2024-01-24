@@ -27,7 +27,7 @@
                 v-if="item.showSplit"
               >
                 <el-button
-                  v-if="printTypeVal == 1"
+                  v-if="printTypeVal == 1 || printTypeVal == 0"
                   :label="index"
                   :type="`${item.select ? 'primary' : ''}`"
                   @click="selectGroup(item, !item.select)"
@@ -144,20 +144,20 @@
       <div
         class="preview-area"
         :class="`preview${printTypeVal}`"
-        v-if="changeDishes.length && printTypeVal != 3"
+        v-if="printTypeVal != 3"
       >
         <!-- 打印后厨 -->
         <div class="chef" v-if="printTypeVal == 0">
-          <div
-            class="chef-item"
-            v-for="(item, index) in changeDishes"
-            :key="'ticket' + index"
-          >
+          <div class="chef-item">
             <Ticket
               class="area-0"
+              :showOrder="true"
               :isPrintOrder="true"
+              :showAddress="false"
+              :showContact="false"
               :orderDetail="orderDetail"
-              :goodsList="[item]"
+              :goodsList="latestDishes"
+              :showEnCn="0"
             ></Ticket>
           </div>
         </div>
@@ -184,6 +184,7 @@
               :orderDetail="orderDetail"
               :goodsList="changeDishes"
               :toolParams="toolForm"
+              :showEnCn="routeQuery.receiptType"
             ></Ticket>
           </div>
         </div>
@@ -205,16 +206,12 @@
 
       <!-- 按钮 -->
       <div class="btn-box">
-        <ml-btn
-          size="large"
-          class="big-btn"
-          v-if="printTypeVal != 3"
+        <div @click="routeQuery.receiptType=1"  class="big-btn" >{{ $LANG_TEXT("English Receipt") }}</div>
+        <div @click="routeQuery.receiptType=0" class="big-btn" >{{ $LANG_TEXT("中文收据") }}</div>
+        <div @click="routeQuery.receiptType=2" class="big-btn">{{ $LANG_TEXT("EN_CN") }}</div>
+        <ml-btn size="large" class="big-btn" v-if="printTypeVal == 2 || printTypeVal == 0"
           @submit="printData"
-          >{{ $LANG_TEXT("打印") }}</ml-btn
-        >
-        <!-- <ml-btn size="large" class="big-btn" @submit="downLoadPrintLog" v-else>{{
-          $LANG_TEXT("下载")
-        }}</ml-btn> -->
+          >{{ $LANG_TEXT("打印") }}</ml-btn>
       </div>
     </div>
   </div>
@@ -323,6 +320,35 @@ const toolForm = reactive({
   freeChargePrice: "",
 });
 
+const latestDishes = ref([]);
+watch(
+  () => addedToCart.value.length,
+  (nVal) => {
+  console.log("i am parparing ticket");
+  let item;
+  let indexOfArr = [];
+  addedToCart.value.forEach(element => {
+    if(!isEmpty.includes(element.index)){
+      indexOfArr.push(element.index);
+    }
+    //console.log(indexOfArr);
+    const maxIndex = indexOfArr.slice(-1);
+    //console.log(maxIndex);
+    if(element.index==maxIndex){
+      item = element;
+    }
+  });
+  //console.log(addedToCart.value.indexOf(item))
+  const index = addedToCart.value.indexOf(item)+1;
+  //console.log(index);
+  //let lastDishes = [];
+  const length = addedToCart.value.length;
+  //console.log(length);
+ for(let i = index; i < length; i++){
+  latestDishes.value.push(addedToCart.value[i]);
+    //console.log(lastDishes);
+  };
+  });
 // 订单数据查询
 // 数据
 const stagingCarData = ref([]);
@@ -627,7 +653,7 @@ watch(
         changeDishes.value = [];
       }
     }
-    console.log(changeDishes.value);
+    //console.log(changeDishes.value);
   }
 );
 
@@ -650,7 +676,7 @@ const selectDishe = (item) => {
   } else {
     changeDishes.value.push(item);
   }
-  console.log(changeDishes.value);
+  //console.log(changeDishes.value);
 };
 
 // 选择分组
@@ -677,6 +703,12 @@ const selectGroup = (group, isCheck) => {
   group.select = !group.select;
   console.log(changeDishes.value);
 };
+//跳转结账画面
+const goToCheckout = () => {
+  //navigate to payment page after print ticket into the kitchen by zizhen guo
+  //payment ooption: 1. pay 2. print receipt 3. later payment
+  router.push({ path: "/eatFoodDirectPayment", query: { orderId: routeParams.orderId }});
+};
 
 // 打印数据
 const printData = async (call) => {
@@ -698,13 +730,13 @@ const printData = async (call) => {
       const files = await uploadImage(canvasUrl);
 
       const addKitchenPrintList = [];
-      for (let i = 0; i < changeDishes.value.length; i++) {
+      for (let i = 0; i < files.files.length; i++) {
         const file = files.files[i];
         const fileName = file.name;
-        const item = changeDishes.value[i];
+        const item = addedToCart.value[1].shopId
         addKitchenPrintList.push({
           fileName,
-          shoppingGoodId: item.shopId,
+          shoppingGoodId: item
         });
       }
 
@@ -818,6 +850,18 @@ const cleanPrintQueueRecord = async (call) => {
   }
 };
 
+//语言选项
+const langSelected = ref();
+//自动打印 zizhen guo
+const checkAutoPrinte = () => {
+  selectDishe(0);
+  if(routeQuery.autoPrinted == 1){
+    printData();
+    //router.go(-1);
+    router.push({ path: "/eatFood", query: { orderId: routeParams.orderId,autoOpenPayment: 1 }});
+  };
+};
+setTimeout(checkAutoPrinte,500);
 // 监听返回
 watch(()=>proxy.$route.path,(nVal,old)=>{
   if(old == '/printLog'){
@@ -828,7 +872,6 @@ console.log(proxy.$route.path)
 
 onMounted(async () => {
   const id = routeQuery.orderId;
-
   await getOrderIdDetail(id);
   await getTemporaryOrderShoppingList(id);
   await getOrderShoppingList(id);
@@ -1105,12 +1148,15 @@ $grayColor: #fdfdfd;
     }
 
     .btn-box {
-      text-align: center;
+      display: flex;
       margin: 10px 0;
+      justify-content: center;
+      //text-align: center;
+      //margin: 10px 0;
 
       .big-btn {
-        font-size: 18px;
-        padding: 8px 40px;
+        font-size: 16px;
+        padding: 8px 20px;
       }
     }
   }

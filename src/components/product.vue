@@ -1,110 +1,14 @@
 <!-- 菜品 -->
 <template>
   <!-- 更新菜品 -->
-  <div
-    class="product-card"
-    :class="`${productType}`"
-    v-if="productType == 'update'"
-  >
-    <div
-      class="product-box"
-      :style="{ 'grid-template-columns': ` ${imageWidth}px 1fr` }"
-    >
-      <div
-        class="product-status"
-        :style="{ height: imageHeight + 'px', width: imageWidth + 'px' }"
-      >
-        <ml-image
-          fit="cover"
-          :style="{ height: imageHeight + 'px', width: imageWidth + 'px' }"
-          class="image"
-          :src="proxy.$previewFileUrl + detail.logo"
-        ></ml-image>
-
-        <!-- 顶部标签 -->
-        <!-- 是否是售罄 -->
-        <p class="status-bar sell-out" v-if="detail.isSellOut == 'YES'">
-          {{ proxy.$LANG_TEXT("售罄") }}
-        </p>
-        <!-- 是否是热售 -->
-        <p class="status-bar hot-sale" v-else-if="detail.isHotSelling == 'YES'">
-          {{ proxy.$LANG_TEXT("热售") }}
-        </p>
-        <!-- 是否是下架 -->
-        <p
-          class="status-bar btn-off"
-          v-else-if="detail.status == 'OFF_SHELVES'"
-        >
-          {{ proxy.$LANG_TEXT("下架") }}
-        </p>
-        <!-- 是否是上架 -->
-        <p class="status-bar btn-on" v-else-if="detail.status == 'ON_SHELVES'">
-          {{ proxy.$LANG_TEXT("上架") }}
-        </p>
-      </div>
-
-      <!-- 信息 -->
-      <div class="productInfo">
-        <div class="title">
-          <second-language
-            class="ml-line-2"
-            :firstText="detail.name"
-            :secondText="detail.nameLanguage"
-          ></second-language>
-          <div class="price">${{ detail.price }}</div>
-        </div>
-
-        <div class="bottom">
-          <!-- 上下架、售罄 -->
-          <div class="tool-btn">
-            <!-- 是否是下架 上架&&正常库存 -->
-            <p
-              class="status-bar btn-off"
-              @click="updateStatus('status', 'OFF_SHELVES')"
-              v-if="detail.status == 'ON_SHELVES'"
-            >
-              {{ proxy.$LANG_TEXT("下架") }}
-            </p>
-            <!-- 是否是上架 下架&&售罄中 -->
-            <p
-              class="status-bar btn-on"
-              @click="updateStatus('status', 'ON_SHELVES')"
-              v-if="detail.status == 'OFF_SHELVES'"
-            >
-              {{ proxy.$LANG_TEXT("上架") }}
-            </p>
-          </div>
-
-          <!-- 热售 -->
-          <div
-            class="hot-sale"
-            @click="updateStatus('hotSale')"
-            :class="`${detail.isHotSelling}`"
-          >
-            {{ proxy.$LANG_TEXT("热售") }}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- 点菜 -->
-  <div class="product-card" :class="`${productType}`" v-else>
-        <div class="product-box" @click="clickAllDishes">
-      
-
+  <div class="product-card" :class="`${productType}`" @click="clickAllDishes">
       <!-- 信息 -->
-      <div class="productInfo">
-        <div class="title ml-line-2">
-          <second-language
-            :firstText="detail.name"
-            :secondText="detail.nameLanguage"
-          ></second-language>
-        </div>
+      <second-language
+        :firstText="detail.name"
+        :secondText="detail.nameLanguage"
+      ></second-language>
         <!-- bottom zone displayed and deleted by zizhen guo -->
-
-      </div>
-    </div>
   </div>
 </template>
 
@@ -356,6 +260,7 @@ const changeSpec = () => {
 
 // 点击整个菜品
 const clickAllDishes = () => {
+  console.log("i am clicked")
   console.log(showSpecBtn.value);
   if (showSpecBtn.value) {
     changeSpec();
@@ -385,6 +290,16 @@ const clickAllDishes = () => {
   // 热售
   $hotSale: #ff5722;
 
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  //padding-top: 15px;
+  //margin: 5px 0;
+  display: flex;
+  // flex-direction: column;
+  // flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
   // 更新菜品
   &.update {
     .product-box {
@@ -432,7 +347,7 @@ const clickAllDishes = () => {
         justify-content: space-between;
 
         .title {
-          font-size: 18px;
+          font-size: 30px;
           font-weight: bold;
           margin: 5px 0;
           display: flex;
@@ -530,7 +445,7 @@ const clickAllDishes = () => {
       }
       .title {
         // change font colour and position by zizhen guo
-        font-size: 18px;
+        font-size: 25px;
         //font-weight: bold;
         //margin: 5px 0;
         height: 40px;

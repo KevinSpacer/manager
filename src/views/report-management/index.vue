@@ -1,15 +1,18 @@
 
 
 <template>
-  <div class="report-container">
+  <div class="report-container" id="report-container">
     <div class="top-header">
       <p class="title">
         {{ $LANG_TEXT("报表统计") }}
       </p>
-      <p class="daterange">
-        {{ currDateTime.startTime }} - {{ currDateTime.endTime }}
-      </p>
-
+      <div class="daterange">
+        <label for="start">Start date:</label>
+        <el-input type="datetime-local" v-model="currDateTime.startTime"></el-input>
+        <label for="start">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;End date:</label>
+        <el-input type="datetime-local" v-model="currDateTime.endTime"></el-input>
+        <button @click="calculate">提交</button>
+      </div>
       <div class="btn">
         <ml-btn type="primary" size="large" @submit="print">{{
           $LANG_TEXT("打印")
@@ -64,23 +67,22 @@
 </template>
 
 <script setup>
-import { onMounted, ref, getCurrentInstance, computed } from "vue";
+import { onMounted, ref, getCurrentInstance, reactive } from "vue";
 import html2canvas from "html2canvas";
 
 const { proxy } = getCurrentInstance();
 
 // 当前时间
-const currDateTime = computed(() => {
-  const curr = Date.now();
-  const startTime = proxy.$timeSpToDate(curr, 0);
-  const endTime = proxy.$timeSpToDate(curr, 1);
-
-  return {
-    startTime,
-    endTime,
-  };
+const currDateTime = reactive({
+  startTime:proxy.$timeSpToDate(Date.now(), 0),
+  endTime:proxy.$timeSpToDate(Date.now(), 1)
 });
-
+// 重新计算用户选择的时间
+const calculate = () => {
+  getSelectOrderPayStatistics();
+  getSelectOrderMoneyStatistics();
+  return;
+};
 // 订单支付方式统计
 const orderPayStatistics = ref([]);
 // 查询 获取订单支付方式统计
@@ -88,7 +90,7 @@ const getSelectOrderPayStatistics = async () => {
   try {
     const res = await proxy.$storeDispatch(
       "fetchSelectOrderPayStatistics",
-      currDateTime.value
+      currDateTime
     );
     const result = res.result;
 
@@ -120,7 +122,7 @@ const getSelectOrderMoneyStatistics = async () => {
 // 打印
 
 const print = (call) => {
-  const dom = document.querySelector("#print-content");
+  const dom = document.querySelector("#report-container");
   html2canvas(dom).then((canvas) => {
 		const downUrl = canvas.toDataURL('image/png',1.0)
 
@@ -151,8 +153,13 @@ onMounted(async () => {
       font-weight: bold;
     }
     .daterange {
+      padding-top: 20px;
+      padding-left: 200px;
+      padding-right: 200px;
       font-size: 20px;
-      line-height: 50px;
+      line-height: 30px;
+      display: grid;
+      grid-template-columns: auto auto auto auto auto;
     }
     .btn {
       width: auto;

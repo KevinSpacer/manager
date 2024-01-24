@@ -2,20 +2,18 @@
 
 <template>
 	<div class="keyboard-box" :class="type">
-		<Keyboard
+		<Keyboard v-if="type == ('number' || 'seat')" 
 			v-for="item in keyboards"
-			:loading="item.value == 'confirm' && isConfirm"
-			:key="item.key"
-			:keyProps="item"
-			@keyBtn="getKeyBtn"
-		/>
+			:loading="item.value == 'confirm' && isConfirm" :key="item.key" :keyProps="item" @keyBtn="getKeyBtn" />
+		<MultiKeyboard v-else v-for="item in keyboards" :loading="item.value == 'confirm' && isConfirm" :keyProps="item"
+		@keyBtn="getKeyBtn" />
 	</div>
 </template>
 
 <script setup>
 import { ref, watch, onMounted, computed, getCurrentInstance } from "vue";
 import Keyboard from "../keyboard.vue";
-
+import MultiKeyboard from "../multi-keyboard.vue"
 const { proxy } = getCurrentInstance();
 
 const emits = defineEmits(["keyBtn", "confirm", "update:modelValue", "back"]);
@@ -68,39 +66,39 @@ const keyboards = computed(() => {
 		return [
 			{
 				key: "7",
-				value: 7,
+				value: "7",
 			},
 			{
 				key: "8",
-				value: 8,
+				value: "8",
 			},
 			{
 				key: "9",
-				value: 9,
+				value: "9",
 			},
 			{
 				key: "4",
-				value: 4,
+				value: "4",
 			},
 			{
 				key: "5",
-				value: 5,
+				value: "5",
 			},
 			{
 				key: "6",
-				value: 6,
+				value: "6",
 			},
 			{
 				key: "1",
-				value: 1,
+				value: "1",
 			},
 			{
 				key: "2",
-				value: 2,
+				value: "2",
 			},
 			{
 				key: "3",
-				value: 3,
+				value: "3",
 			},
 			{
 				key: proxy.$LANG_TEXT("回退"),
@@ -115,7 +113,7 @@ const keyboards = computed(() => {
 				value: "confirm",
 			},
 		];
-	} else {
+	} if (props.type == "seat") {
 		const bases = [
 			{
 				key: "7",
@@ -199,6 +197,176 @@ const keyboards = computed(() => {
 		} else {
 			return bases;
 		}
+	} else {
+		return [[
+			{
+				key: "1",
+				value: 1,
+			},
+			{
+				key: "2",
+				value: 2,
+			},
+			{
+				key: "3",
+				value: 3,
+			},
+			{
+				key: "4",
+				value: 4,
+			},
+			{
+				key: "5",
+				value: 5,
+			},
+			{
+				key: "6",
+				value: 6,
+			},
+			{
+				key: "7",
+				value: 7,
+			},
+			{
+				key: "8",
+				value: 8,
+			},
+			{
+				key: "9",
+				value: 9,
+			},
+			{
+				key: "0",
+				value: 0,
+			},
+			{
+				key: "回撤",
+				value: "delete",
+			},
+			{
+				key: "确认",
+				value: "confirm",
+			},
+		],
+		[
+			{
+				key: "q",
+				value: "q",
+			},
+			{
+				key: "w",
+				value: "w",
+			},
+			{
+				key: "e",
+				value: "e",
+			},
+			{
+				key: "r",
+				value: "r",
+			},
+			{
+				key: "t",
+				value: "t",
+			},
+			{
+				key: "y",
+				value: "y",
+			},
+			{
+				key: "u",
+				value: "u",
+			},
+			{
+				key: "i",
+				value: "i",
+			},
+			{
+				key: "o",
+				value: "o",
+			},
+			{
+				key: "p",
+				value: "p",
+			},
+		],
+		[
+			{
+				key: "a",
+				value: "a",
+			},
+			{
+				key: "s",
+				value: "s",
+			},
+			{
+				key: "d",
+				value: "d",
+			},
+			{
+				key: "f",
+				value: "f",
+			},
+			{
+				key: "g",
+				value: "g",
+			},
+			{
+				key: "h",
+				value: "h",
+			},
+			{
+				key: "j",
+				value: "j",
+			},
+			{
+				key: "k",
+				value: "k",
+			},
+			{
+				key: "l",
+				value: "l",
+			},
+		],
+		[
+			{
+				key: "z",
+				value: "z",
+			},
+			{
+				key: "x",
+				value: "x",
+			},
+			{
+				key: "c",
+				value: "c",
+			},
+			{
+				key: "空格",
+				value: " ",
+			},
+			{
+				key: "v",
+				value: "v",
+			},
+			{
+				key: "b",
+				value: "b",
+			},
+			{
+				key: "n",
+				value: "n",
+			},
+			{
+				key: "m",
+				value: "m",
+			},
+			{
+				key: "清空",
+				value: "clear",
+			},
+		]
+		]
 	}
 });
 
@@ -207,14 +375,14 @@ const isConfirm = ref(false);
 
 // 按下
 const getKeyBtn = (key) => {
-	// console.log(key);
 	if (typeof key == "string") {
 		if (key == "delete") {
 			// 清除一位输入值
 			if (value.value) {
 				const str_val = value.value.toString();
 				value.value = str_val.slice(0, str_val.length - 1);
-				console.log(value.value);
+				const str_val1 = addressString.value.toString();
+				addressString.value = str_val1.slice(0,str_val1.length - 1)
 			}
 		} else if (key == "confirm") {
 			if (isConfirm.value) {
@@ -224,9 +392,14 @@ const getKeyBtn = (key) => {
 			emits("confirm", closeLoading);
 		} else if (key == "back") {
 			emits("back", closeLoading);
+		} else if (key == "clear"){
+			addressString.value = "";
+			emits("update:modelValue", addressString.value);
 		} else {
 			// 英文字母赋值
+			console.log("i am key added into value "+ key)
 			value.value += key;
+			console.log(value.value);
 		}
 	} else {
 		value.value += key + "";
@@ -237,10 +410,10 @@ const getKeyBtn = (key) => {
 const closeLoading = () => {
 	isConfirm.value = false;
 };
-
+const addressString = ref("");
 watch(
 	() => value.value,
-	(nVal) => {
+	(nVal,oVal) => {
 		if (props.type == "number") {
 			if (props.isString) {
 				emits("update:modelValue", nVal);
@@ -248,7 +421,10 @@ watch(
 				emits("update:modelValue", nVal ? Number(nVal) : "");
 			}
 		} else {
-			emits("update:modelValue", nVal);
+			let a = oVal.length;
+			let addressChar = value.value.substring(a)
+			addressString.value = addressString.value.concat(addressChar);
+			emits("update:modelValue", addressString.value);
 		}
 	}
 );
@@ -278,8 +454,8 @@ defineExpose({
 		grid-template-columns: repeat(5, 1fr);
 	}
 
-	.keyboard + .keyboard {
-	}
+	.keyboard+.keyboard {}
+
 	.keyboard {
 		margin-top: 40px;
 	}
