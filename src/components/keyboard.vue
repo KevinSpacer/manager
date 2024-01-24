@@ -41,7 +41,7 @@ const downBtn = () => {
 
 <style lang="scss" scoped>
 .keyboard {
-	moz-user-select: -moz-none;
+	-moz-user-select: -moz-none;
 	-moz-user-select: none;
 	-o-user-select: none;
 	-khtml-user-select: none; /* you could also put this in a class */

@@ -2,7 +2,7 @@
 
 <template>
 	<div class="keyboard-box" :class="type">
-		<Keyboard v-if="type == ('number' || 'seat')" 
+		<Keyboard v-if="type == 'number' || 'seat'" 
 			v-for="item in keyboards"
 			:loading="item.value == 'confirm' && isConfirm" :key="item.key" :keyProps="item" @keyBtn="getKeyBtn" />
 		<MultiKeyboard v-else v-for="item in keyboards" :loading="item.value == 'confirm' && isConfirm" :keyProps="item"
