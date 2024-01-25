@@ -177,7 +177,7 @@ const getBaseConfigInfo = async () => {
 
     // 赋值全局
     mainModule.baseConfigInfo = result;
-    console.log("开始计时");
+    // console.log("开始计时");
     timeRouterCall(route.path);
   } catch (error) {}
 };
@@ -253,7 +253,7 @@ const autoOut = (call) => {
       const second = mine * 60;
       const timeSp = second * 1000;
 
-      console.log(`计时${mine}分钟`);
+      // console.log(`计时${mine}分钟`);
       autoTimeId.value = setTimeout(() => {
         console.log("时间到");
         call();
@@ -352,7 +352,7 @@ onMounted(async () => {
     if (route.path == "/login") {
       return;
     }
-    console.log("重置");
+    // console.log("重置");
     timeRouterCall(route.path);
   };
 });

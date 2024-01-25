@@ -533,10 +533,8 @@ const submitJoinCar = () => {
 	console.log("before make a new skuid, the original id is " +props.goodsSkuId);
 	obj.skuId = props.goodsSkuId;
 	if(isEmpty.includes(props.goodsSkuId)){
-		console.log("make a new skuid for new item in the cart")
 		obj.skuId = `${obj.goodsId}-${
 		dataIds.join("-") + "-" + condmentDataIds.join("-")}`
-		console.log("new skuid for new item in the cart is "+ obj.skuId)
 	}
 	// 校验 提示语
 	const tips = currSpecList.value
@@ -561,7 +559,6 @@ const submitJoinCar = () => {
 		});
 		return;
 	}
-	console.log(obj)
 	emits("joinCar", obj);
 };
 

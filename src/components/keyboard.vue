@@ -49,13 +49,13 @@ const downBtn = () => {
 	-ms-user-select: none;
 	user-select: none; /**禁止选中文字*/
 	.btn {
-		width: 80px;
-		height: 80px;
+		width: 70px;
+		height: 70px;
 		border-radius: 100px;
 		border: 1px solid #c2c2c2;
 		color: #05d69d;
 		text-align: center;
-		line-height: 80px;
+		line-height: 70px;
 		font-size: 25px;
 		cursor: pointer;
 		box-sizing: border-box;

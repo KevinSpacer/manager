@@ -2,11 +2,15 @@
 
 <template>
 	<div class="keyboard-box" :class="type">
-		<Keyboard v-if="type == 'number' || 'seat'" 
-			v-for="item in keyboards"
+
+		<Keyboard v-if="type === 'number' || type === 'seat'" v-for="item in keyboards"
 			:loading="item.value == 'confirm' && isConfirm" :key="item.key" :keyProps="item" @keyBtn="getKeyBtn" />
-		<MultiKeyboard v-else v-for="item in keyboards" :loading="item.value == 'confirm' && isConfirm" :keyProps="item"
-		@keyBtn="getKeyBtn" />
+
+		<MultiKeyboard v-else v-for="item in keyboards" :key="item.value" :loading="item.value == 'confirm' && isConfirm"
+			:keyProps="item" @keyBtn="getKeyBtn" />
+
+
+
 	</div>
 </template>
 
@@ -16,7 +20,7 @@ import Keyboard from "../keyboard.vue";
 import MultiKeyboard from "../multi-keyboard.vue"
 const { proxy } = getCurrentInstance();
 
-const emits = defineEmits(["keyBtn", "confirm", "update:modelValue", "back"]);
+const emits = defineEmits(["keyBtn", "confirm", "update:modelValue", "back","confirmClose"]);
 const props = defineProps({
 	keyProps: {
 		type: Object,
@@ -52,11 +56,12 @@ const props = defineProps({
 
 const openBack = ref(props.showBack);
 
-const value = ref(props.modelValue);
+const inputVal = ref(props.modelValue);
+console.log('inputVal',inputVal);
 watch(
 	() => props.modelValue,
 	(nVal) => {
-		value.value = nVal;
+		inputVal.value = nVal;
 	}
 );
 
@@ -66,39 +71,39 @@ const keyboards = computed(() => {
 		return [
 			{
 				key: "7",
-				value: "7",
+				value: 7,
 			},
 			{
 				key: "8",
-				value: "8",
+				value: 8,
 			},
 			{
 				key: "9",
-				value: "9",
+				value: 9,
 			},
 			{
 				key: "4",
-				value: "4",
+				value: 4,
 			},
 			{
 				key: "5",
-				value: "5",
+				value: 5,
 			},
 			{
 				key: "6",
-				value: "6",
+				value: 6,
 			},
 			{
 				key: "1",
-				value: "1",
+				value: 1,
 			},
 			{
 				key: "2",
-				value: "2",
+				value: 2,
 			},
 			{
 				key: "3",
-				value: "3",
+				value: 3,
 			},
 			{
 				key: proxy.$LANG_TEXT("回退"),
@@ -201,43 +206,43 @@ const keyboards = computed(() => {
 		return [[
 			{
 				key: "1",
-				value: 1,
+				value: "1",
 			},
 			{
 				key: "2",
-				value: 2,
+				value: "2",
 			},
 			{
 				key: "3",
-				value: 3,
+				value: "3",
 			},
 			{
 				key: "4",
-				value: 4,
+				value: "4",
 			},
 			{
 				key: "5",
-				value: 5,
+				value: "5",
 			},
 			{
 				key: "6",
-				value: 6,
+				value: "6",
 			},
 			{
 				key: "7",
-				value: 7,
+				value: "7",
 			},
 			{
 				key: "8",
-				value: 8,
+				value: "8",
 			},
 			{
 				key: "9",
-				value: 9,
+				value: "9",
 			},
 			{
 				key: "0",
-				value: 0,
+				value: "0",
 			},
 			{
 				key: "回撤",
@@ -369,40 +374,35 @@ const keyboards = computed(() => {
 		]
 	}
 });
-
 // 是否已点击确认
 const isConfirm = ref(false);
 
 // 按下
 const getKeyBtn = (key) => {
+	
 	if (typeof key == "string") {
 		if (key == "delete") {
 			// 清除一位输入值
-			if (value.value) {
-				const str_val = value.value.toString();
-				value.value = str_val.slice(0, str_val.length - 1);
+			if (inputVal.value) {
+				const str_val = inputVal.value.toString();
+				inputVal.value = str_val.slice(0, str_val.length - 1);
 				const str_val1 = addressString.value.toString();
-				addressString.value = str_val1.slice(0,str_val1.length - 1)
+				addressString.value = str_val1.slice(0, str_val1.length - 1)
 			}
 		} else if (key == "confirm") {
-			if (isConfirm.value) {
-				return;
-			}
-			isConfirm.value = true;
-			emits("confirm", closeLoading);
+			emits("confirmClose",inputVal.value)
+			// inputVal.value = ''
 		} else if (key == "back") {
 			emits("back", closeLoading);
-		} else if (key == "clear"){
+		} else if (key == "clear") {
 			addressString.value = "";
 			emits("update:modelValue", addressString.value);
 		} else {
-			// 英文字母赋值
-			console.log("i am key added into value "+ key)
-			value.value += key;
-			console.log(value.value);
+			inputVal.value += key;
 		}
 	} else {
-		value.value += key + "";
+		inputVal.value += key + '';
+		console.log('inputVal.value',inputVal.value);
 	}
 };
 
@@ -412,8 +412,10 @@ const closeLoading = () => {
 };
 const addressString = ref("");
 watch(
-	() => value.value,
-	(nVal,oVal) => {
+	() => inputVal.value,
+	(nVal, oVal) => {
+		console.log('props.=====================type',props.type);
+		console.log('nVal.=====================nVal',nVal);
 		if (props.type == "number") {
 			if (props.isString) {
 				emits("update:modelValue", nVal);
@@ -422,7 +424,7 @@ watch(
 			}
 		} else {
 			let a = oVal.length;
-			let addressChar = value.value.substring(a)
+			let addressChar = inputVal.value.substring(a)
 			addressString.value = addressString.value.concat(addressChar);
 			emits("update:modelValue", addressString.value);
 		}
@@ -433,7 +435,7 @@ onMounted(() => {
 	openBack.value = props.showBack;
 });
 defineExpose({
-	value,
+	inputVal,
 });
 </script>
 
@@ -441,9 +443,8 @@ defineExpose({
 .keyboard-box {
 	width: 100%;
 	display: grid;
-	flex-direction: row;
-	flex-wrap: wrap;
-	justify-content: space-evenly;
+	grid-template-rows: repeat(4, 80px);
+	text-align: center;
 	justify-items: center;
 
 	&.number {
@@ -457,7 +458,7 @@ defineExpose({
 	.keyboard+.keyboard {}
 
 	.keyboard {
-		margin-top: 40px;
+		margin-top: 20px;
 	}
 }
 </style>

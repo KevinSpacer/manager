@@ -139,6 +139,7 @@ const keyboardDown = (key) => {
         value.value = res;
       } else {
         const res = Number(value.value + key);
+        console.log('res',res);
         value.value = isNaN(res) ? 0 : res;
       }
       console.log(value.value);
@@ -189,10 +190,7 @@ defineExpose({
     .all-number {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 90px);
-      align-items: center;
-      justify-items: center;
-
+      grid-template-rows: repeat(4, 20px);
       .key-item {
         width: 90%;
         height: 90%;
