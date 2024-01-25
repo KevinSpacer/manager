@@ -25,6 +25,7 @@ import {
   computed,
   onMounted,
   reactive,
+  inject,
 } from "vue";
 import {
   discountMannerTypes,
@@ -63,7 +64,16 @@ const priceDetails = ref([]);
 const getCurrOrderPirce = async () => {
   const id = order_id.value;
   if (!id) {
-    return;
+    // display price tax without order placed, preview both
+    priceDetails.value.push({
+        label: `税率`,
+        value: `${taxRate.value.taxRateValue}`,
+      });
+      priceDetails.value.push({
+        label: `原价`,
+        value: `$${originalPrice.value.originPrice}`,
+      });
+      return;
   }
   try {
     const res = await proxy.$storeDispatch("fetchCalculateOrderMoney", { id });
@@ -224,7 +234,9 @@ const getOrderTippingList = async () => {
     });
   }
 };
-
+//inject below 2 to the child element of payment zizhen guo 01-25-2024
+const originalPrice = inject('price');
+const taxRate  = inject('taxRate')
 onMounted(async () => {
   await getOrderTippingList();
   getCurrOrderPirce();

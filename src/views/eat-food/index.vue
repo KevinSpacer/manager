@@ -340,10 +340,9 @@
               </el-icon>
               {{ $LANG_TEXT("暂存订单") }}
             </ml-btn>
-            <el-button v-if="proxy.$isUseAuth('付款')" type="info" :disabled="!routeParams.orderId ||
-              !getTypeStatusBtn('DIRECT_PAY') ||
-              !isOrdered
-              " 
+             <!-- below remove in order to able to open payment box even order placed even zizhen guo 01-25-204 -->
+            <!-- :disabled="!routeParams.orderId ||!getTypeStatusBtn('DIRECT_PAY') ||!isOrdered"  -->
+            <el-button v-if="proxy.$isUseAuth('付款')" type="info" 
               @click.stop="openToolDialog('payment')">
               <el-icon>
                 <WalletFilled />
@@ -839,13 +838,6 @@ watch(
   () => chooseClassify.value,
   (nVal) => {
     getSellDishesCombineList();
-  }
-);
-// fix index of dish choosen auto jump to new added dish
-watch(
-  () => addedToCart.value.length,
-  (nVal) => {
-    chooseCarGoodsIndex.value = nVal-1;
   }
 );
 // 菜品明细 额外
@@ -2969,6 +2961,15 @@ const keyDown = (value) => {
 const customerConfirmRemark = () => {
   drawer.value = false;
 };
+// fix index of dish choosen auto jump to new added dish
+watch(
+  () => addedToCart.value.length,
+  (nVal) => {
+    chooseCarGoodsIndex.value = nVal-1;
+    });
+//provide below 2 to the child element of payment zizhen guo 01-25-2024
+provide('price', getTotalOrderAmount);
+provide('taxRate', goodsDetailed);
 //检测是否自动付款
 const checkOpenPaymentBox = () => {
   if(routeQuery.autoOpenPayment == 1){

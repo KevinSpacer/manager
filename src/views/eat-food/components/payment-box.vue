@@ -6,7 +6,8 @@
       <tag-method v-model="chooseType" :options="playTypeList"></tag-method>
       <p class="give-change" v-if="chooseType == 4">
         <span>{{ $LANG_TEXT("找零") }}：</span>
-        <span>${{ (playParams.payAmount - currAcount).toFixed(2)}}</span>
+        <span v-if = "playParams.id">${{ (playParams.payAmount - currAcount).toFixed(2)}}</span>
+        <span v-else>${{(playParams.payAmount - originalPrice.originPrice).toFixed(2)}}</span>
       </p>
     </div>
     <div class="display" v-if="chooseType == 4">
@@ -34,7 +35,8 @@
       >
         {{ proxy.$LANG_TEXT("结账完成") }}
       </el-button>
-      <el-button
+      <!-- 3 button removed, change to setting in the admin -->
+      <!-- <el-button
         size="large"
         type="danger"
         @click="printBill(0)"
@@ -57,7 +59,7 @@
         v-if="proxy.$isUseAuth('打印账单')"
       >
         {{ proxy.$LANG_TEXT("中英账单") }}
-      </el-button>
+      </el-button> -->
       <el-button size="large" type="danger" @click="returnBack">
         {{ proxy.$LANG_TEXT("退出") }}
       </el-button>
@@ -73,6 +75,7 @@ import {
   computed,
   onMounted,
   reactive,
+  inject,
 } from "vue";
 
 import tagMethod from "./tag-method.vue";
@@ -231,6 +234,8 @@ const printBill = async (value) => {
   emits("printBill", playParams);
 };
 
+//inject below 2 to the child element of payment zizhen guo 01-25-2024
+const originalPrice = inject('price');
 // 返回
 const returnBack = () => {
   emits("back");
