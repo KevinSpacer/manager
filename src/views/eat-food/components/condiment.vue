@@ -367,7 +367,8 @@ const condimentResult = computed(() => {
 // 最终确认结果 by zizhen guo
 const condimentConfirm = (dishValue) => {
   // addedToCart[routeParams.carIndex].dishesSpicesList = condimentResult.value;
-    console.log(dishValue);
+  // fix condiment disorder in the cart 
+    sureNormal.value.reverse();
   // 处理调味品 至 自定义调味品
   const condiment_custom = sureNormal.value.map((item) => {
     const classItem =
