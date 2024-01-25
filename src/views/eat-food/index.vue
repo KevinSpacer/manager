@@ -841,7 +841,13 @@ watch(
     getSellDishesCombineList();
   }
 );
-
+// fix index of dish choosen auto jump to new added dish
+watch(
+  () => addedToCart.value.length,
+  (nVal) => {
+    chooseCarGoodsIndex.value = nVal-1;
+  }
+);
 // 菜品明细 额外
 const goodsDetailed = computed(() => {
   const baseInfo = baseConfigInfo.value;
