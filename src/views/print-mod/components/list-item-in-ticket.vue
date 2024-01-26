@@ -65,7 +65,7 @@ import {
 import tabScroll from "@/components/tab-scroll";
 const { proxy } = getCurrentInstance();
 
-const emits = defineEmits(["handClick"]);
+//const emits = defineEmits(["handClick"]);
 
 const props = defineProps({
   // 菜品、套餐信息
@@ -187,9 +187,9 @@ const showListData = computed(() => {
   return list;
 });
 
-const handClick = () => {
-  emits("handClick");
-};
+// const handClick = () => {
+//   emits("handClick");
+// };
 
 onMounted(() => {});
 </script>

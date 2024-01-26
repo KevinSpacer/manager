@@ -37,7 +37,8 @@ const { proxy } = getCurrentInstance();
 const route = useRoute();
 const router = useRouter();
 const routeParams = route.query;
-
+//added emits event to call palce order
+const emits = defineEmits(["submitOrder",]);
 //
 const props = defineProps({
 	modelValue: {
@@ -82,6 +83,10 @@ const getOrderPayDetail = async () => {
 
 // 结账完成
 const payOver = async (params) => {
+  if(!params.id){
+    console.log(params.id)
+    emits("submitOrder",params)
+  }else{
   const { payAmount } = params;
   const result = {
     ...params,
@@ -90,11 +95,12 @@ const payOver = async (params) => {
     result.payAmount = orderDetail.value.payAmount;
   }
   try {
+    console.log(result);
     await proxy.$storeDispatch("fetchPayOrderAmount", result);
     proxy.$message.success(proxy.$LANG_TEXT("结账完成"));
     router.push({ path: "/eatFood", query: {type:TAKE_FOOD}});
   } catch (error) {}
-};
+}};
 
 // 打印账单
 const printBill = (params) => {
@@ -113,8 +119,10 @@ const back = () => {
   }
 };
 
+
+
 onMounted(async () => {
-  console.log(routeParams);
+  //console.log(routeParams);
   if(isEmpty.includes(routeParams)){
     routeParams=modelValue
   }

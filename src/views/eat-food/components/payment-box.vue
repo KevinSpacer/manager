@@ -209,6 +209,7 @@ const getPlayTypeList = async () => {
 
 // 结账完成
 const playOver = async (call) => {
+  //console.log(call)
   if (!openPayBtn.value) {
     call ? call() : "";
     return;

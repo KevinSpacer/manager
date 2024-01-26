@@ -18,7 +18,7 @@
           </div>
           <div class="waiter btn oneLineOver" @click="openTypeChangeDialog">
             <span>{{ $LANG_TEXT("类型") }}：</span>
-            <span>{{ routeParams.type == 'EAT_IN' ? "堂吃":"" }}</span>
+            <span>{{ routeParams.type == 'EAT_IN' ? "堂吃" : "" }}</span>
           </div>
         </div>
         <!-- 客户、终端号、服务员 -->
@@ -34,7 +34,7 @@
           </div>
           <div class="waiter btn oneLineOver" @click="openTypeChangeDialog">
             <span>{{ $LANG_TEXT("类型") }}：</span>
-            <span>{{ routeParams.type == 'TAKE_FOOD' ? "等取":"外送" }}</span>
+            <span>{{ routeParams.type == 'TAKE_FOOD' ? "等取" : "外送" }}</span>
           </div>
           <div class="waiter btn oneLineOver" @click="openCustomerDialog">
             <span>{{ $LANG_TEXT("地址") }}：</span>
@@ -110,7 +110,7 @@
                   <!-- 底部 规格  -->
                   <!-- @handClick="changeCarListItem(index)" -->
                   <list-item :goodsDetail="item" @deleteCondiments="deleteCondiment($event, index)"
-                    @changeSpec="changeSpec($event)"></list-item>
+                  @changeSpec="changeSpec($event)"></list-item>
                 </div>
               </div>
 
@@ -340,10 +340,9 @@
               </el-icon>
               {{ $LANG_TEXT("暂存订单") }}
             </ml-btn>
-             <!-- below remove in order to able to open payment box even order placed even zizhen guo 01-25-204 -->
+            <!-- below remove in order to able to open payment box even order placed even zizhen guo 01-25-204 -->
             <!-- :disabled="!routeParams.orderId ||!getTypeStatusBtn('DIRECT_PAY') ||!isOrdered"  -->
-            <el-button v-if="proxy.$isUseAuth('付款')" type="info" 
-              @click.stop="openToolDialog('payment')">
+            <el-button v-if="proxy.$isUseAuth('付款')" type="info" @click.stop="openToolDialog('payment')">
               <el-icon>
                 <WalletFilled />
               </el-icon>
@@ -486,23 +485,14 @@
   <ml-dialog ref="toolDialogRef" :width="toolDialogWidthObj[toolDialogType] || '50%'"
     :title="$LANG_TEXT(toolDialogTitleObj[toolDialogType])" @confirm="toolDialogConfirm" @cancel="toolCancel"
     :confirmText="$LANG_TEXT(toolDialoConfirmTextObj[toolDialogType])"
-    :cancelText="$LANG_TEXT(toolDialoCancelTextObj[toolDialogType] || '取消')"
-    :showBtn="!toolDialogType == 'payment'">
+    :cancelText="$LANG_TEXT(toolDialoCancelTextObj[toolDialogType] || '取消')" :showBtn="!toolDialogType == 'payment'">
     <template #content>
       <!-- 备注 -->
       <div v-if="toolDialogType == 'remark'">
-        <el-input type="textarea" rows="10" @click="drawer=true" v-model="toolForm.remark"></el-input>
-        <el-drawer 
-        v-model="drawer"
-        :size="'45%'"
-        :withHeader="false" 
-        :direction="'btt'"
-        :before-close="handleClose">
+        <el-input type="textarea" rows="10" @click="drawer = true" v-model="toolForm.remark"></el-input>
+        <el-drawer v-model="drawer" :size="'45%'" :withHeader="false" :direction="'btt'" :before-close="handleClose">
           <div>
-            <soft-keyboard-number
-            :type="'multi'"
-            @update:modelValue="keyDown($event)"
-            @confirm="customerConfirmRemark">
+            <soft-keyboard-number :type="'multi'" @update:modelValue="keyDown($event)" @confirm="customerConfirmRemark">
             </soft-keyboard-number>
           </div>
         </el-drawer>
@@ -556,7 +546,8 @@
       </div>
       <!-- 付款页面 -->
       <div v-if="toolDialogType == 'payment'">
-        <payment v-model="routeParams"></payment>
+        <payment v-model="routeParams" @submitOrder="stagingOrder($event, 'playOrder')">
+        </payment>
       </div>
     </template>
   </ml-dialog>
@@ -613,11 +604,9 @@
     </template>
   </ml-dialog>
 
-<!-- 类型选择窗口 -->
+  <!-- 类型选择窗口 -->
   <ml-dialog width="595px" ref="typeChangeDialogRef" :cancelText="$LANG_TEXT('取消支付')" :confirmText="$LANG_TEXT('前往支付')"
-    :title="$LANG_TEXT('类型选择')" 
-    :showBtn="false"
-    @confirm="paidPayGo" @cancel="cancelPaidPay">
+    :title="$LANG_TEXT('类型选择')" :showBtn="false" @confirm="paidPayGo" @cancel="cancelPaidPay">
     <template #content>
       <div class="paid-pay">
         <h4 class="tips">
@@ -774,6 +763,7 @@ import freeOrder from "./components/free-order.vue";
 import customerUserDialog from "./components/customer-user-dialog.vue";
 import condiment from "./components/condiment.vue";
 import payment from "./direct-payment.vue"
+import { SelectProps } from "element-plus/es/components/select-v2/src/defaults";
 
 const { proxy } = getCurrentInstance();
 
@@ -978,7 +968,7 @@ const toolDialogTitleObj = {
   consolidated: "合单",
   partialPay: "分额支付",
   cancelingOrder: "取消订单",
-  payment:"付款"
+  payment: "付款"
 };
 // 多功能弹窗确认文字
 const toolDialoConfirmTextObj = {
@@ -1384,7 +1374,11 @@ const orderSubmitData = computed(() => {
 });
 // 暂存订单、下单
 // playOrder、storeOrder
-const stagingOrder = async (call, type) => {
+const stagingOrder = async (params, type) => {
+  console.log("I am in the method of stagingOrder")
+  console.log(params)
+  console.log(params.paymentMethodName)
+  console.log(type)
   if (!addedToCart.value.length) {
     proxy.$message({
       type: "warning",
@@ -1421,10 +1415,25 @@ const stagingOrder = async (call, type) => {
         // direct jump to payment page when 下单 click
         //router.replace("/order");
         // navigatoPayTo("/eatFoodDirectPayment", routeParams);
-        router.push({ path: "/printMod", query: { orderId: routeParams.orderId, type: 0, autoPrinted: 1 } });
-
-        openToolDialog('payment')
+        //router.push({ path: "/printMod", query: { orderId: routeParams.orderId, type: 0, autoPrinted: 1 } });
+        //openToolDialog('payment')
       });
+      if(params.paymentMethodName){
+          //const { payAmount } = orderDetail.value.actuallyPaidMoney;
+        const result = {}
+        //const id = Integer(routeParams.orderId)
+        //console.log(id);
+        result.id = routeParams.orderId;
+        result.payAmount = orderDetail.value.actuallyPaidMoney;
+        result.paymentMethodName = params.paymentMethodName;
+        result.paymentMethodNameLanguage = params.paymentMethodNameLanguage;
+        console.log(result)
+        console.log("after finish payment ")
+        await proxy.$storeDispatch("fetchPayOrderAmount", result);
+        proxy.$message.success(proxy.$LANG_TEXT("结账完成"));
+        console.log("after finish payment ")
+      //router.push({ path: "/eatFood", query: { type: TAKE_FOOD } });
+      }
   } catch (error) {
     call();
   }
@@ -2800,8 +2809,8 @@ const openTypeChangeDialog = () => {
   typeChangeDialogRef.value.openDialog();
 }
 const typeChange = (value) => {
-  console.log("type is selected is " +value);
-  switch(value){
+  console.log("type is selected is " + value);
+  switch (value) {
     case "EAT_IN":
       routeParams.type = value;
       typeChangeDialogRef.value.closeDialog();
@@ -2811,7 +2820,8 @@ const typeChange = (value) => {
     case "TAKE_OUT":
       routeParams.type = value;
       typeChangeDialogRef.value.closeDialog();
-  }};
+  }
+};
 // 表格数据
 const tableData = ref({});
 
@@ -2953,10 +2963,10 @@ const allHandCancel = () => {
 const drawer = ref(false)
 const handleClose = () => {
   drawer.value = false
-  toolForm.remark="";
+  toolForm.remark = "";
 }
 const keyDown = (value) => {
-  toolForm.remark=value;
+  toolForm.remark = value;
 }
 const customerConfirmRemark = () => {
   drawer.value = false;
@@ -2965,18 +2975,18 @@ const customerConfirmRemark = () => {
 watch(
   () => addedToCart.value.length,
   (nVal) => {
-    chooseCarGoodsIndex.value = nVal-1;
-    });
+    chooseCarGoodsIndex.value = nVal - 1;
+  });
 //provide below 2 to the child element of payment zizhen guo 01-25-2024
 provide('price', getTotalOrderAmount);
 provide('taxRate', goodsDetailed);
 //检测是否自动付款
 const checkOpenPaymentBox = () => {
-  if(routeQuery.autoOpenPayment == 1){
+  if (routeQuery.autoOpenPayment == 1) {
     openToolDialog('payment')
   };
 };
-setTimeout(checkOpenPaymentBox,500);
+setTimeout(checkOpenPaymentBox, 500);
 onMounted(() => {
   init();
 });
@@ -3064,6 +3074,7 @@ $grayColor: #fdfdfd;
         //grid-template-columns: repeat(3, 1fr);
         justify-content: space-between;
         row-gap: 5px;
+
         >div {
           width: auto;
           height: 40px;
@@ -3319,4 +3330,5 @@ $grayColor: #fdfdfd;
     height: 90%;
     margin: 2.5%;
   }
-}</style>
+}
+</style>
