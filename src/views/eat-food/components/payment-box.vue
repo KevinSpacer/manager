@@ -6,20 +6,20 @@
       <tag-method v-model="chooseType" :options="playTypeList"></tag-method>
       <p class="give-change" v-if="chooseType == 4">
         <span>{{ $LANG_TEXT("找零") }}：</span>
-        <span v-if = "playParams.id">${{ (playParams.payAmount - currAcount).toFixed(2)}}</span>
-        <span v-else>${{(playParams.payAmount - originalPrice.originPrice).toFixed(2)}}</span>
+        <span v-if="playParams.id">${{ (playParams.payAmount - currAcount).toFixed(2) }}</span>
+        <span v-else>${{ (playParams.payAmount - originalPrice.originPrice).toFixed(2) }}</span>
       </p>
     </div>
     <div class="display" v-if="chooseType == 4">
-        <span>{{ $LANG_TEXT("Amount Received:      ") }}</span>
-        <span>${{ playParams.payAmount.toFixed(2) }}</span>
+      <span>{{ $LANG_TEXT("Amount Received: ") }}</span>
+      <span>${{ playParams.payAmount.toFixed(2) }}</span>
     </div>
     <div class="button" v-if="chooseType == 4">
-      <el-button size="large" type="primary" @click="payOverBtn(100)">$  100</el-button>
-      <el-button size="large" type="primary" @click="payOverBtn(50)">$  50</el-button>
-      <el-button size="large" type="primary" @click="payOverBtn(20)">$  20</el-button>
-      <el-button size="large" type="primary" @click="payOverBtn(10)">$  10</el-button>
-      <el-button size="large" type="primary" @click="payOverBtn(5)">$  5 </el-button>
+      <el-button size="large" type="primary" @click="payOverBtn(100)">$ 100</el-button>
+      <el-button size="large" type="primary" @click="payOverBtn(50)">$ 50</el-button>
+      <el-button size="large" type="primary" @click="payOverBtn(20)">$ 20</el-button>
+      <el-button size="large" type="primary" @click="payOverBtn(10)">$ 10</el-button>
+      <el-button size="large" type="primary" @click="payOverBtn(5)">$ 5 </el-button>
     </div>
     <div class="direct-active">
       <keyboard-number v-model="playParams.payAmount" @confirm="playOver" v-if="chooseType == 4">
@@ -27,12 +27,7 @@
     </div>
     <!-- 结账操作 -->
     <div class="direct-active" v-if="showDirect">
-      <el-button
-        size="large"
-        type="danger"
-        :disabled="!openPayBtn"
-        @click="playOver()"
-      >
+      <el-button size="large" type="danger" :disabled="!openPayBtn" @click="playOver()">
         {{ proxy.$LANG_TEXT("结账完成") }}
       </el-button>
       <!-- 3 button removed, change to setting in the admin -->
@@ -176,7 +171,7 @@ const chooseType = ref("");
 watch(
   () => chooseType.value,
   (nVal) => {
-    if(nVal==3){
+    if (nVal == 3) {
       playParams.payAmount = activeAcount;
     }
     playTypeList.value.map((d) => (d.checked = d.id == nVal));
@@ -204,7 +199,7 @@ const getPlayTypeList = async () => {
         ).id;
       }
     });
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 结账完成
@@ -218,8 +213,8 @@ const playOver = async (call) => {
 };
 
 //支付按钮
-const payOverBtn = async (value,call) => {
-  playParams.payAmount=value;
+const payOverBtn = async (value, call) => {
+  playParams.payAmount = value;
   if (!openPayBtn.value) {
     call ? call() : "";
     return;
@@ -249,14 +244,16 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .pay-container {
-.display{
-  padding-bottom: 20px;
-  font-size: 20px;
-}
-.button{
-  display: grid;
-  grid-template-columns: repeat(5, auto);
-}
+  .display {
+    padding-bottom: 20px;
+    font-size: 20px;
+  }
+
+  .button {
+    display: grid;
+    grid-template-columns: repeat(5, auto);
+  }
+
   .direct-active {
     margin: 15px 0;
   }

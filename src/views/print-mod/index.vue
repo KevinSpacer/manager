@@ -857,8 +857,8 @@ const checkAutoPrinte = () => {
   selectDishe(0);
   if(routeQuery.autoPrinted == 1){
     printData();
-    //router.go(-1);
-    router.push({ path: "/eatFood", query: { orderId: routeParams.orderId,autoOpenPayment: 1 }});
+    router.go(-1);
+    //router.push({ path: "/eatFood", query: { orderId: routeParams.orderId,autoOpenPayment: 1 }});
   };
 };
 setTimeout(checkAutoPrinte,500);

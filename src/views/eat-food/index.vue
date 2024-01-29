@@ -546,7 +546,8 @@
       </div>
       <!-- 付款页面 -->
       <div v-if="toolDialogType == 'payment'">
-        <payment v-model="routeParams"></payment>
+        <payment v-model="routeParams" @submitOrder="stagingOrder($event, 'playOrder')">
+        </payment>
       </div>
     </template>
   </ml-dialog>
@@ -762,6 +763,7 @@ import freeOrder from "./components/free-order.vue";
 import customerUserDialog from "./components/customer-user-dialog.vue";
 import condiment from "./components/condiment.vue";
 import payment from "./direct-payment.vue"
+import { SelectProps } from "element-plus/es/components/select-v2/src/defaults";
 
 const { proxy } = getCurrentInstance();
 
@@ -1372,7 +1374,8 @@ const orderSubmitData = computed(() => {
 });
 // 暂存订单、下单
 // playOrder、storeOrder
-const stagingOrder = async (call, type) => {
+const stagingOrder = async (params, type) => {
+
   if (!addedToCart.value.length) {
     proxy.$message({
       type: "warning",
@@ -1409,12 +1412,26 @@ const stagingOrder = async (call, type) => {
         // direct jump to payment page when 下单 click
         //router.replace("/order");
         // navigatoPayTo("/eatFoodDirectPayment", routeParams);
-        router.push({ path: "/printMod", query: { orderId: routeParams.orderId, type: 0, autoPrinted: 1 } });
-
-        openToolDialog('payment')
+        //router.push({ path: "/printMod", query: { orderId: routeParams.orderId, type: 0, autoPrinted: 1 } });
+        //openToolDialog('payment')
       });
+    if (params.paymentMethodName) {
+      await proxy.$storeDispatch("fetchInitiateOrderDirectPay", routeParams.orderId);
+      //const { payAmount } = orderDetail.value.actuallyPaidMoney;
+      const res = await proxy.$storeDispatch("fetchGetOrderPayDetailList", routeParams.orderId);
+      const result = {}
+      //const id = Integer(routeParams.orderId)
+      //console.log(id);
+      result.id = res.result[0].id
+      result.payAmount = orderDetail.value.actuallyPaidMoney;
+      result.paymentMethodName = params.paymentMethodName;
+      result.paymentMethodNameLanguage = params.paymentMethodNameLanguage;
+      await proxy.$storeDispatch("fetchPayOrderAmount", result);
+      proxy.$message.success(proxy.$LANG_TEXT("结账完成"));
+      //router.push({ path: "/eatFood", query: { type: TAKE_FOOD } });
+    }
   } catch (error) {
-    call();
+    console.log(error)
   }
 };
 
