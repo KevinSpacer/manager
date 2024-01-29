@@ -11,10 +11,9 @@
             </el-input>
           </el-form-item>
           <el-form-item :label="$LANG_TEXT('电话号码')" prop="contactWay">
-            <el-input v-model="customerForm.contactWay"
-            oninput="value=value.length>10?value.splice(0,10)"
-              maxlength="10" @input="getInfoData" @click="openKeyboard('number', 'contactWay')"
-              :placeholder="$LANG_TEXT('电话号码')"  show-word-limit>
+            <el-input v-model="customerForm.contactWay" oninput="value=value.length>10?value.splice(0,10)" maxlength="10"
+              @input="getInfoData" @click="openKeyboard('number', 'contactWay')" :placeholder="$LANG_TEXT('电话号码')"
+              show-word-limit>
             </el-input>
           </el-form-item>
           <el-form-item :label="$LANG_TEXT('地址')" prop="address">
@@ -36,8 +35,8 @@
         <el-drawer v-model="drawer" :size=sizeKeyboard :withHeader="false" :direction="direction"
           :before-close="handleClose">
           <div>
-            <soft-keyboard-number :type="typeKeyboard" @update:modelValue="keyDown($event)" @confirm="customerConfirm"
-              @confirmClose="confirmClose">
+            <soft-keyboard-number :callerKeyboard="callerKeyboard" :type="typeKeyboard"
+              @update:modelValue="keyDown($event)" @confirm="customerConfirm" @handleClose="handleClose">
             </soft-keyboard-number>
           </div>
         </el-drawer>
@@ -62,7 +61,6 @@ const confirmText = ref('确认')
 // 加载状态
 const showLoading = ref(false);
 const { proxy } = getCurrentInstance();
-
 const props = defineProps({
   data: {
     type: Object,
@@ -79,20 +77,15 @@ const props = defineProps({
     default: "",
   },
 });
-
 const useEatType = computed(() => props.eatType);
-
 // 点餐
 const mainModule = proxy.$usePiniaModule("mainModule");
-
 // 客户基本信息
 // ref
 const customerDialogRef = ref();
 const customerFormRef = ref();
-
 // 数据
-const customerForm = reactive(props.data);
-
+const customerForm = reactive({});
 watch(
   () => props.data,
   (nVal) => {
@@ -145,12 +138,22 @@ const customerRules = computed(() => {
   }
 });
 
+watch(() => customerForm.contactWay, (newVal, oldVal) => {
+  if (newVal.length > 10) {
+    // 电话号码超出10位自动截取再做验证  Oneway 1.29
+    customerForm.contactWay = newVal.substring(0, 10)
+    customerFormRef.value.validate()
+    keyDown(customerForm.contactWay)
+  }
+})
+
 // 打开客户信息弹窗
 const openDialog = () => {
   customerDialogRef.value.openDialog();
-  for (let i in customerForm) {
-    customerForm[i] = "";
-  }
+  // 克隆表单数据防止修改原数据 Oneway 1.29
+  let formObj = JSON.parse(JSON.stringify(props.data))
+  // 数据回显  Oneway 1.29
+  Object.assign(customerForm, { ...formObj })
   nextTick(() => {
     customerFormRef.value.resetFields();
   });
@@ -166,7 +169,6 @@ const customerConfirm = async (call) => {
     drawer.value = false;
     return;
   }
-  //customerDialogRef.value.closeDialog();
   customerForm.waiterName = mainModule.userInfo.name;
   emits("confirm", customerForm, call);
 };
@@ -181,6 +183,7 @@ const getInfoData = async () => {
     const res = await proxy.$storeDispatch("fetchGetClientByContactWay", {
       contactWay,
     });
+    console.log('res', res);
     const result = res.result;
     if (result) {
       proxy.$updateParams(customerForm, result);
@@ -195,17 +198,21 @@ let callerKeyboard = ref()
 const direction = ref('btt')
 //key was hit and received
 const keyDown = (value) => {
-  value = value + '';
+  if (value) {
+    value = value + '';
+  } else {
+    value = ''
+  }
   if (callerKeyboard.value == "userName") {
     customerForm.userName = value;
-  }
-  if (callerKeyboard.value == "contactWay") {
+  } else if (callerKeyboard.value == "contactWay") {
     customerForm.contactWay = value;
     getInfoData();
-  }
-  if (callerKeyboard.value == "address") {
+  } else {
     customerForm.address = value;
   }
+  console.log('customerForm', { ...customerForm });
+
 }
 //keyboard switch
 const openKeyboard = (tp, key) => {
@@ -221,31 +228,12 @@ const openKeyboard = (tp, key) => {
 //close drawer and clear value
 const handleClose = () => {
   drawer.value = false
-  if (callerKeyboard.value == "userName") {
-    customerForm.userName = "";
-  }
-  if (callerKeyboard.value == "contactWay") {
-    customerForm.contactWay = "";
-    getInfoData();
-  }
-  if (callerKeyboard.value == "address") {
-    customerForm.address = "";
-  }
 }
 
-const confirmClose = (value) => {
-  drawer.value = false
-  if (callerKeyboard.value == "userName") {
-    customerForm.userName = value;
-  }
-  if (callerKeyboard.value == "contactWay") {
-    customerForm.contactWay = value;
-    getInfoData();
-  }
-  if (callerKeyboard.value == "address") {
-    customerForm.address = value;
-  }
-}
+// const confirmClose = () => {
+//   drawer.value = false
+
+// }
 defineExpose({
   openDialog,
   closeDialog,

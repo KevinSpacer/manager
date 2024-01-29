@@ -19,8 +19,7 @@ import { ref, watch, onMounted, computed, getCurrentInstance } from "vue";
 import Keyboard from "../keyboard.vue";
 import MultiKeyboard from "../multi-keyboard.vue"
 const { proxy } = getCurrentInstance();
-
-const emits = defineEmits(["keyBtn", "confirm", "update:modelValue", "back","confirmClose"]);
+const emits = defineEmits(["keyBtn", "confirm", "update:modelValue", "back", "handleClose"]);
 const props = defineProps({
 	keyProps: {
 		type: Object,
@@ -52,16 +51,61 @@ const props = defineProps({
 		type: Boolean,
 		default: false,
 	},
+	callerKeyboard: {
+		type: String,
+		default: 'userName'
+	}
 });
-
 const openBack = ref(props.showBack);
-
 const inputVal = ref(props.modelValue);
-console.log('inputVal',inputVal);
+const curKeyType = ref('String') //当前点击键盘类型 字符串/数字
+// 是否已点击确认
+const isConfirm = ref(false);
+const userNameString = ref('') //客户姓名键盘信息
+const contactWayString = ref('') //联系电话键盘信息
+const addressString = ref(""); //收货地址键盘信息 Oneway 1.29
+// 键盘表单同步 
 watch(
 	() => props.modelValue,
 	(nVal) => {
 		inputVal.value = nVal;
+	}
+);
+
+watch(() => props.callerKeyboard, (newVal) => {
+	// 键盘切换时将内容还原 Oneway 1.29
+	inputVal.value = ''
+	emits("update:modelValue", inputVal.value);
+
+},)
+
+watch(
+	() => inputVal.value,
+	(nVal, oVal) => {
+		// 回显键盘传入的信息 Oneway 1.29
+		if (props.type == "number") {
+			if (props.isString) {
+				contactWayString.value = nVal
+				emits("update:modelValue", contactWayString.value);
+			} else {
+				contactWayString.value = nVal
+				if (contactWayString.value.length > 10) {
+					contactWayString.value = contactWayString.value.substring(0, 10)
+				}
+				emits("update:modelValue", contactWayString.value ? Number(contactWayString.value) : "");
+			}
+		} else {
+			if (props.callerKeyboard === 'address') {
+				let a = oVal.length;
+				let addressChar = inputVal.value.substring(a)
+				addressString.value = addressString.value.concat(addressChar);
+				emits("update:modelValue", addressString.value);
+			}
+			else {
+				userNameString.value = inputVal.value
+				emits("update:modelValue", userNameString.value);
+			}
+		}
 	}
 );
 
@@ -374,13 +418,11 @@ const keyboards = computed(() => {
 		]
 	}
 });
-// 是否已点击确认
-const isConfirm = ref(false);
 
 // 按下
 const getKeyBtn = (key) => {
-	
-	if (typeof key == "string") {
+	curKeyType.value = typeof key
+	if (curKeyType.value == "string") {
 		if (key == "delete") {
 			// 清除一位输入值
 			if (inputVal.value) {
@@ -390,8 +432,16 @@ const getKeyBtn = (key) => {
 				addressString.value = str_val1.slice(0, str_val1.length - 1)
 			}
 		} else if (key == "confirm") {
-			emits("confirmClose",inputVal.value)
-			// inputVal.value = ''
+			// 关闭键盘
+			emits("handleClose")
+			// 更新表单的值
+			if (props.callerKeyboard === 'contactWay') {
+				emits("update:modelValue", contactWayString.value);
+			} else if (props.callerKeyboard === 'address') {
+				emits("update:modelValue", addressString.value);
+			} else {
+				emits("update:modelValue", userNameString.value);
+			}
 		} else if (key == "back") {
 			emits("back", closeLoading);
 		} else if (key == "clear") {
@@ -402,7 +452,6 @@ const getKeyBtn = (key) => {
 		}
 	} else {
 		inputVal.value += key + '';
-		console.log('inputVal.value',inputVal.value);
 	}
 };
 
@@ -410,29 +459,13 @@ const getKeyBtn = (key) => {
 const closeLoading = () => {
 	isConfirm.value = false;
 };
-const addressString = ref("");
-watch(
-	() => inputVal.value,
-	(nVal, oVal) => {
-		console.log('props.=====================type',props.type);
-		console.log('nVal.=====================nVal',nVal);
-		if (props.type == "number") {
-			if (props.isString) {
-				emits("update:modelValue", nVal);
-			} else {
-				emits("update:modelValue", nVal ? Number(nVal) : "");
-			}
-		} else {
-			let a = oVal.length;
-			let addressChar = inputVal.value.substring(a)
-			addressString.value = addressString.value.concat(addressChar);
-			emits("update:modelValue", addressString.value);
-		}
-	}
-);
+
+
 
 onMounted(() => {
 	openBack.value = props.showBack;
+	// 默认初始键盘 Oneway 1.29
+	getKeyBtn('')
 });
 defineExpose({
 	inputVal,
