@@ -1403,32 +1403,29 @@ const stagingOrder = async (params, type) => {
           type: "success",
           message: proxy.$LANG_TEXT(tips + "成功"),
         });
-
         // 订单号
         routeParams.orderId = res.result;
         await getOrderIdDetail(res.result);
         // 重置
         addedToCart.value = [];
-        // direct jump to payment page when 下单 click
-        //router.replace("/order");
-        // navigatoPayTo("/eatFoodDirectPayment", routeParams);
-        //router.push({ path: "/printMod", query: { orderId: routeParams.orderId, type: 0, autoPrinted: 1 } });
-        //openToolDialog('payment')
       });
-    if (params.paymentMethodName) {
-      await proxy.$storeDispatch("fetchInitiateOrderDirectPay", routeParams.orderId);
-      //const { payAmount } = orderDetail.value.actuallyPaidMoney;
-      const res = await proxy.$storeDispatch("fetchGetOrderPayDetailList", routeParams.orderId);
-      const result = {}
-      //const id = Integer(routeParams.orderId)
-      //console.log(id);
-      result.id = res.result[0].id
-      result.payAmount = orderDetail.value.actuallyPaidMoney;
-      result.paymentMethodName = params.paymentMethodName;
-      result.paymentMethodNameLanguage = params.paymentMethodNameLanguage;
-      await proxy.$storeDispatch("fetchPayOrderAmount", result);
-      proxy.$message.success(proxy.$LANG_TEXT("结账完成"));
-      //router.push({ path: "/eatFood", query: { type: TAKE_FOOD } });
+    if (type == "playOrder") {
+      let printType = 1;
+      if (params.paymentMethodName) {
+        await proxy.$storeDispatch("fetchInitiateOrderDirectPay", routeParams.orderId);
+        const res = await proxy.$storeDispatch("fetchGetOrderPayDetailList", routeParams.orderId);
+        const result = {}
+        result.id = res.result[0].id
+        result.payAmount = orderDetail.value.actuallyPaidMoney;
+        result.paymentMethodName = params.paymentMethodName;
+        result.paymentMethodNameLanguage = params.paymentMethodNameLanguage;
+        await proxy.$storeDispatch("fetchPayOrderAmount", result);
+        proxy.$message.success(proxy.$LANG_TEXT("结账完成"));
+        printType = 2;
+        //router.push({ path: "/printMod", query: { orderId: routeParams.orderId, type: 0, autoPrinted:2 }});
+      }
+      toolDialogRef.value.closeDialog();
+      router.push({ path: "/printMod", query: { orderId: routeParams.orderId, type: 0, autoPrinted: printType } });
     }
   } catch (error) {
     console.log(error)
