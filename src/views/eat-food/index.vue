@@ -1377,7 +1377,7 @@ const orderSubmitData = computed(() => {
 // 暂存订单、下单
 // playOrder、storeOrder
 const stagingOrder = async (params, type) => {
-
+  console.log("this is line 1380 " + params.value);
   if (!addedToCart.value.length) {
     proxy.$message({
       type: "warning",
