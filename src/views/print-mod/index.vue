@@ -793,7 +793,7 @@ const checkAutoPrinte = () => {
       setTimeout(() => { printData() }, 500)
     }
     setTimeout(() => {
-      router.push({ path: "/eatFood", query: { type: "TAKE_FOOD" } })
+      router.push({ path: "/main"})
     }, 500);
   };
 };
