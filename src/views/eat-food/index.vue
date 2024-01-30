@@ -234,10 +234,8 @@
             </el-icon>
             {{ $LANG_TEXT("打印送厨") }}
           </el-button>
-
-
-          <el-button :disabled="isInPay" v-if="proxy.$isUseAuth('自定义菜品')" @click.stop="openCustomGoodsDialog">
-            {{ $LANG_TEXT("自定义菜品") }}
+          <el-button type="success" @click.stop="goBack">
+            {{ $LANG_TEXT("全部订单") }}
           </el-button>
           <!-- <el-button
             @click.stop="setCondiment"
@@ -727,6 +725,10 @@
         <el-button v-if="proxy.$isUseAuth('取消订单')" :disabled="!routeParams.orderId" type="info"
           @click.stop="openToolDialog('cancelingOrder')">
           {{ $LANG_TEXT("取消订单") }}
+        </el-button>
+        <!-- 自定义菜品 -->
+        <el-button :disabled="isInPay" v-if="proxy.$isUseAuth('自定义菜品')" @click.stop="openCustomGoodsDialog">
+          {{ $LANG_TEXT("自定义菜品") }}
         </el-button>
       </div>
     </template>
@@ -1488,6 +1490,10 @@ const openCustomGoodsDialog = () => {
   nextTick(() => {
     customGoodsFormRef.value.resetFields();
   });
+};
+// 查询全部订单
+const goBack = () => {
+  proxy.$navigateTo("/order");
 };
 // 添加
 const customGoodsConfirm = (call) => {
