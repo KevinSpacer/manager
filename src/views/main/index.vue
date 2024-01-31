@@ -421,10 +421,10 @@ const eatType = ref("");
 // 打开客户信息弹窗
 const openCustomerDialog = (res) => {
   const eatIn = proxy.$isUseAuth("堂食");
-  console.log(eatIn);
+  // console.log(eatIn);
   const takeOut  = proxy.$isUseAuth("外卖");
-  console.log(eatIn);
-  console.log("I am in the method of open cus");
+  // console.log(eatIn);
+  // console.log("I am in the method of open cus");
   if(eatIn || takeOut){
     customerDialogRef.value.openDialog()
     eatType.value = res.params.type;
@@ -440,7 +440,7 @@ const openCustomerDialog = (res) => {
 
 // 确认
 const customerConfirm = async (result, call) => {
-  console.log("here is result value and call "+result,call)
+  // console.log("here is result value and call "+result,call)
   customerDialogRef.value.closeDialog();
   result.type = eatType.value;
   await clientAdd(result);
@@ -500,13 +500,13 @@ const checkJumpTakeOut = reactive(bodyMenuData);
 watch(
   checkJumpTakeOut,
   (nVal) => { 
-    console.log(nVal);
+    // console.log(nVal);
     const eatIn = proxy.$isUseAuth("堂食");
-    console.log(eatIn);
+    // console.log(eatIn);
     const takeOut  = proxy.$isUseAuth("外卖");
-    console.log(eatIn);
+    // console.log(eatIn);
     if(!eatIn && !takeOut){
-      console.log("I am going to jump to")
+      // console.log("I am going to jump to")
       doActive(nVal[0]);
     }
   });

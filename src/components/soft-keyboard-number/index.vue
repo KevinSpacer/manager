@@ -19,7 +19,7 @@ import { ref, watch, onMounted, computed, getCurrentInstance } from "vue";
 import Keyboard from "../keyboard.vue";
 import MultiKeyboard from "../multi-keyboard.vue"
 const { proxy } = getCurrentInstance();
-const emits = defineEmits(["keyBtn", "confirm", "update:modelValue", "back", "handleClose"]);
+const emits = defineEmits(["keyBtn", "confirm", "changeInput", "back", "handleClose"]);
 const props = defineProps({
 	keyProps: {
 		type: Object,
@@ -51,9 +51,15 @@ const props = defineProps({
 		type: Boolean,
 		default: false,
 	},
+	// 输入框对应键盘 1.31 Oneway
 	callerKeyboard: {
 		type: String,
 		default: 'userName'
+	},
+	// 表单数据 1.31 Oneway
+	formObj: {
+		type: Object,
+		default: () => { }
 	}
 });
 const openBack = ref(props.showBack);
@@ -64,50 +70,19 @@ const isConfirm = ref(false);
 const userNameString = ref('') //客户姓名键盘信息
 const contactWayString = ref('') //联系电话键盘信息
 const addressString = ref(""); //收货地址键盘信息 Oneway 1.29
-// 键盘表单同步 
-watch(
-	() => props.modelValue,
-	(nVal) => {
-		inputVal.value = nVal;
-	}
-);
-
+// 切换表单时将内容回显到键盘 1.31 Oneway
 watch(() => props.callerKeyboard, (newVal) => {
-	// 键盘切换时将内容还原 Oneway 1.29
 	inputVal.value = ''
-	emits("update:modelValue", inputVal.value);
-
-},)
-
-watch(
-	() => inputVal.value,
-	(nVal, oVal) => {
-		// 回显键盘传入的信息 Oneway 1.29
-		if (props.type == "number") {
-			if (props.isString) {
-				contactWayString.value = nVal
-				emits("update:modelValue", contactWayString.value);
-			} else {
-				contactWayString.value = nVal
-				if (contactWayString.value.length > 10) {
-					contactWayString.value = contactWayString.value.substring(0, 10)
-				}
-				emits("update:modelValue", contactWayString.value ? Number(contactWayString.value) : "");
-			}
-		} else {
-			if (props.callerKeyboard === 'address') {
-				let a = oVal.length;
-				let addressChar = inputVal.value.substring(a)
-				addressString.value = addressString.value.concat(addressChar);
-				emits("update:modelValue", addressString.value);
-			}
-			else {
-				userNameString.value = inputVal.value
-				emits("update:modelValue", userNameString.value);
-			}
-		}
+	console.log(props.formObj)
+	if (newVal === 'userName') {
+		inputVal.value = props.formObj.userName ? props.formObj.userName : ''
+	} else if (newVal === 'contactWay') {
+		inputVal.value = props.formObj.contactWay ? props.formObj.contactWay : ''
+	} else {
+		inputVal.value = props.formObj.address ? props.formObj.address : ''
 	}
-);
+}, { immediate: true })
+
 
 // 按钮数据
 const keyboards = computed(() => {
@@ -432,27 +407,21 @@ const getKeyBtn = (key) => {
 				addressString.value = str_val1.slice(0, str_val1.length - 1)
 			}
 		} else if (key == "confirm") {
-			// 关闭键盘
+			// 键盘确认时收起键盘 同事表单更新 1.31 Oneway
 			emits("handleClose")
-			// 更新表单的值
-			if (props.callerKeyboard === 'contactWay') {
-				emits("update:modelValue", contactWayString.value);
-			} else if (props.callerKeyboard === 'address') {
-				emits("update:modelValue", addressString.value);
-			} else {
-				emits("update:modelValue", userNameString.value);
-			}
+			emits('changeInput', inputVal.value)
 		} else if (key == "back") {
 			emits("back", closeLoading);
 		} else if (key == "clear") {
-			addressString.value = "";
-			emits("update:modelValue", addressString.value);
+			inputVal.value = "";
 		} else {
 			inputVal.value += key;
 		}
 	} else {
 		inputVal.value += key + '';
 	}
+	// 键盘内容更新到表单 1.31 Oneway
+	emits('changeInput', inputVal.value)
 };
 
 // 关闭加载
@@ -464,8 +433,6 @@ const closeLoading = () => {
 
 onMounted(() => {
 	openBack.value = props.showBack;
-	// 默认初始键盘 Oneway 1.29
-	getKeyBtn('')
 });
 defineExpose({
 	inputVal,
@@ -481,7 +448,9 @@ defineExpose({
 	justify-items: center;
 
 	&.number {
-		grid-template-columns: repeat(3, 1fr);
+		width: 100%;
+		justify-content: center;
+		grid-template-columns: repeat(3, 200px);
 	}
 
 	&.seat {

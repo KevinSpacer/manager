@@ -35,8 +35,8 @@
         <el-drawer v-model="drawer" :size=sizeKeyboard :withHeader="false" :direction="direction"
           :before-close="handleClose">
           <div>
-            <soft-keyboard-number :callerKeyboard="callerKeyboard" :type="typeKeyboard"
-              @update:modelValue="keyDown($event)" @confirm="customerConfirm" @handleClose="handleClose">
+            <soft-keyboard-number :callerKeyboard="callerKeyboard" :type="typeKeyboard" :formObj="customerForm"
+              @changeInput="keyDown" @confirm="customerConfirm" @handleClose="handleClose">
             </soft-keyboard-number>
           </div>
         </el-drawer>
@@ -55,7 +55,6 @@ import {
   onMounted,
   nextTick,
 } from "vue";
-
 const emits = defineEmits(["confirm"]);
 const confirmText = ref('确认')
 // 加载状态
@@ -154,12 +153,13 @@ const openDialog = () => {
   let formObj = JSON.parse(JSON.stringify(props.data))
   // 数据回显  Oneway 1.29
   Object.assign(customerForm, { ...formObj })
-  nextTick(() => {
-    customerFormRef.value.resetFields();
-  });
+  // nextTick(() => {
+  //   customerFormRef.value.resetFields();
+  // });
 };
 const closeDialog = () => {
   customerDialogRef.value.closeDialog();
+  // customerFormRef.value.resetFields()
 };
 
 // 确认
@@ -183,7 +183,6 @@ const getInfoData = async () => {
     const res = await proxy.$storeDispatch("fetchGetClientByContactWay", {
       contactWay,
     });
-    console.log('res', res);
     const result = res.result;
     if (result) {
       proxy.$updateParams(customerForm, result);
@@ -200,8 +199,6 @@ const direction = ref('btt')
 const keyDown = (value) => {
   if (value) {
     value = value + '';
-  } else {
-    value = ''
   }
   if (callerKeyboard.value == "userName") {
     customerForm.userName = value;
@@ -211,7 +208,7 @@ const keyDown = (value) => {
   } else {
     customerForm.address = value;
   }
-  console.log('customerForm', { ...customerForm });
+
 
 }
 //keyboard switch
@@ -219,6 +216,19 @@ const openKeyboard = (tp, key) => {
   drawer.value = true;
   typeKeyboard.value = tp;
   callerKeyboard.value = key;
+  if (callerKeyboard.value === 'userName') {
+    if (customerForm.userName) {
+      keyDown(customerForm.userName)
+    }
+  } else if (callerKeyboard.value === 'contactWay') {
+    if (customerForm.contactWay) {
+      keyDown(customerForm.contactWay)
+    }
+  } else {
+    if (customerForm.address) {
+      keyDown(customerForm.address)
+    }
+  }
   if (tp == ('number' || 'seat')) {
     sizeKeyboard.value = '50%';
   } else {
@@ -228,12 +238,9 @@ const openKeyboard = (tp, key) => {
 //close drawer and clear value
 const handleClose = () => {
   drawer.value = false
+
 }
 
-// const confirmClose = () => {
-//   drawer.value = false
-
-// }
 defineExpose({
   openDialog,
   closeDialog,
