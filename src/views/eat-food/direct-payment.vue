@@ -83,7 +83,8 @@ const getOrderPayDetail = async () => {
 
 // 结账完成
 const payOver = async (params) => {
-  if(!params.id){
+  console.log(params);
+  if(!params.id || params.addNewItem){
     console.log(params.id)
     emits("submitOrder",params)
   }else{
@@ -98,14 +99,14 @@ const payOver = async (params) => {
     console.log(result);
     await proxy.$storeDispatch("fetchPayOrderAmount", result);
     proxy.$message.success(proxy.$LANG_TEXT("结账完成"));
-    router.push({ path: "/eatFood", query: {type:TAKE_FOOD}});
+    printBill();
   } catch (error) {}
 }};
 
 // 打印账单
 const printBill = (params) => {
   console.log(params); // 跳转打印
-  router.push({ path: "/printMod", query: { orderId: routeParams.orderId,type:2,autoPrinted:1,receiptType:params.receiptType}});
+  router.push({ path: "/printMod", query: { orderId: routeParams.orderId,type:2,autoPrinted:1}});
 };
 
 // 返回

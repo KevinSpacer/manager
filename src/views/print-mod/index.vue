@@ -15,23 +15,11 @@
         <div class="content">
           <div class="table-list ml-scrollbar">
             <!-- 菜品 -->
-            <div
-              class="list-item"
-              :class="{ 'split-item': item.showSplit }"
-              v-for="(item, index) in addedToCart"
-              :key="'car-item' + index"
-            >
-              <div
-                class="show-split"
-                :class="`type${printTypeVal}`"
-                v-if="item.showSplit"
-              >
-                <el-button
-                  v-if="printTypeVal == 1 || printTypeVal == 0"
-                  :label="index"
-                  :type="`${item.select ? 'primary' : ''}`"
-                  @click="selectGroup(item, !item.select)"
-                >
+            <div class="list-item" :class="{ 'split-item': item.showSplit }" v-for="(item, index) in addedToCart"
+              :key="'car-item' + index">
+              <div class="show-split" :class="`type${printTypeVal}`" v-if="item.showSplit">
+                <el-button v-if="printTypeVal == 1 || printTypeVal == 0" :label="index"
+                  :type="`${item.select ? 'primary' : ''}`" @click="selectGroup(item, !item.select)">
                   {{ $LANG_TEXT("选择分组") }}({{ $LANG_TEXT("第")
                   }}{{ item.index + 1 }}{{ $LANG_TEXT("次点菜") }})
                 </el-button>
@@ -42,49 +30,35 @@
                   <div class="product-name">
                     <div class="check-item">
                       <div v-if="printTypeVal != 2">
-                        <el-checkbox
-                          checked
-                          v-if="changeDisheIds.includes(item.shopId)"
-                        />
+                        <el-checkbox checked v-if="changeDisheIds.includes(item.shopId)" />
                         <el-checkbox v-else />
                       </div>
                     </div>
-                    <second-language
-                      :firstText="item.name"
-                      :secondText="item.nameLanguage || item.name"
-                    ></second-language>
+                    <second-language :firstText="item.name"
+                      :secondText="item.nameLanguage || item.name"></second-language>
                   </div>
                   <div class="product-num">
                     <span>{{ item.goodsQuantity }}</span>
                   </div>
                   <div class="product-price">
-                      ${{ (item.price * item.goodsQuantity || 0).toFixed(2) }}
+                    ${{ (item.price * item.goodsQuantity || 0).toFixed(2) }}
 
                     <!-- 折扣 -->
                     <span>
-                      <i
-                        class="iconfont icon-discount"
-                        v-if="item.isDiscount == 'YES'"
-                      ></i>
+                      <i class="iconfont icon-discount" v-if="item.isDiscount == 'YES'"></i>
                       <!-- 百分比 -->
-                      <span
-                        v-if="
-                          item.dishesDiscountType == 'PERCENT' &&
-                          Number(item.dishesDiscount) &&
-                            item.dishesDiscount != 100
-                        "
-                      >
-                          (${{ item.discountPrice }})
+                      <span v-if="item.dishesDiscountType == 'PERCENT' &&
+                        Number(item.dishesDiscount) &&
+                        item.dishesDiscount != 100
+                        ">
+                        (${{ item.discountPrice }})
                         <!-- (-{{ item.dishesDiscount }}%) -->
                       </span>
                       <!-- 定额 -->
-                      <span
-                        v-if="
-                          item.dishesDiscountType == 'QUOTA' &&
-                          Number(item.dishesDiscount)
-                        "
-                      >
-                          (${{ item.discountPrice }})
+                      <span v-if="item.dishesDiscountType == 'QUOTA' &&
+                        Number(item.dishesDiscount)
+                        ">
+                        (${{ item.discountPrice }})
                         <!-- (-${{ item.dishesDiscount }}) -->
                       </span>
                     </span>
@@ -92,10 +66,7 @@
                 </div>
 
                 <!-- 规格 -->
-                <list-item
-                  @handClick="selectDishe(item)"
-                  :goodsDetail="item"
-                ></list-item>
+                <list-item @handClick="selectDishe(item)" :goodsDetail="item"></list-item>
               </div>
             </div>
           </div>
@@ -118,84 +89,46 @@
             </el-button>
           </div>
         </div>
-        <router-view
-          v-if="refreshPrintLogView"
-          ref="printLogRef"
-          @changePrint="showPrintLog"
-        ></router-view>
+        <router-view v-if="refreshPrintLogView" ref="printLogRef" @changePrint="showPrintLog"></router-view>
       </div>
     </div>
 
     <div class="preview-box">
       <!-- 选项卡 -->
       <div class="print-type">
-        <div
-          @click="printTypeVal = item.value"
-          class="type-item"
-          :class="{ 'is-active': printTypeVal === item.value }"
-          v-for="(item, index) in printTypes"
-          :key="'type' + index"
-        >
+        <div @click="printTypeVal = item.value" class="type-item" :class="{ 'is-active': printTypeVal === item.value }"
+          v-for="(item, index) in printTypes" :key="'type' + index">
           {{ $LANG_TEXT(item.label) }}
         </div>
       </div>
 
       <!-- 预览区域 -->
-      <div
-        class="preview-area"
-        :class="`preview${printTypeVal}`"
-        v-if="printTypeVal != 3"
-      >
+      <div class="preview-area" :class="`preview${printTypeVal}`" v-if="printTypeVal != 3">
         <!-- 打印后厨 -->
         <div class="chef" v-if="printTypeVal == 0">
           <div class="chef-item">
-            <Ticket
-              class="area-0"
-              :showOrder="true"
-              :isPrintOrder="true"
-              :showAddress="false"
-              :showContact="false"
-              :orderDetail="orderDetail"
-              :goodsList="latestDishes"
-              :showEnCn="0"
-            ></Ticket>
+            <Ticket class="area-0" :showOrder="true" :isPrintOrder="true" :showAddress="false" :showContact="false"
+              :orderDetail="orderDetail" :goodsList="latestDishes" :showEnCn="0"></Ticket>
           </div>
         </div>
         <!-- 打印菜品 -->
         <div class="all-down" v-if="printTypeVal == 1">
           <div id="print-area">
-            <Ticket
-              :showLogo="true"
-              :showOrder="true"
-              :orderDetail="orderDetail"
-              :goodsList="changeDishes"
-            ></Ticket>
+            <Ticket :showLogo="true" :showOrder="true" :orderDetail="orderDetail" :goodsList="changeDishes"></Ticket>
           </div>
         </div>
         <!-- 打印订单 -->
         <div class="all-down" v-if="printTypeVal == 2">
           <div id="print-area">
-            <Ticket
-              :isPrintOrder="true"
-              :showLogo="true"
-              :showOrder="true"
-              :showPrice="true"
-              :showTips="true"
-              :orderDetail="orderDetail"
-              :goodsList="changeDishes"
-              :toolParams="toolForm"
-              :showEnCn="routeQuery.receiptType"
-            ></Ticket>
+            <Ticket :isPrintOrder="true" :showLogo="true" :showOrder="true" :showPrice="true" :showTips="true"
+              :orderDetail="orderDetail" :goodsList="changeDishes" :toolParams="toolForm"
+              :showEnCn="routeQuery.receiptType"></Ticket>
           </div>
         </div>
       </div>
 
       <!-- 缺省 -->
-      <el-empty
-        class="ml-empty"
-        v-if="!changeDishes.length && printTypeVal != 3"
-        :description="$LANG_TEXT('暂无数据')"
-      />
+      <el-empty class="ml-empty" v-if="!changeDishes.length && printTypeVal != 3" :description="$LANG_TEXT('暂无数据')" />
 
       <!-- 打印记录 小票显示 -->
       <div class="print-log-type" v-if="printTypeVal == 3">
@@ -206,12 +139,11 @@
 
       <!-- 按钮 -->
       <div class="btn-box">
-        <div @click="routeQuery.receiptType=1"  class="big-btn" >{{ $LANG_TEXT("English Receipt") }}</div>
-        <div @click="routeQuery.receiptType=0" class="big-btn" >{{ $LANG_TEXT("中文收据") }}</div>
-        <div @click="routeQuery.receiptType=2" class="big-btn">{{ $LANG_TEXT("EN_CN") }}</div>
-        <ml-btn size="large" class="big-btn" v-if="printTypeVal == 2 || printTypeVal == 0"
-          @submit="printData"
-          >{{ $LANG_TEXT("打印") }}</ml-btn>
+        <div @click="routeQuery.receiptType = 1" class="big-btn">{{ $LANG_TEXT("English Receipt") }}</div>
+        <div @click="routeQuery.receiptType = 0" class="big-btn">{{ $LANG_TEXT("中文收据") }}</div>
+        <div @click="routeQuery.receiptType = 2" class="big-btn">{{ $LANG_TEXT("EN_CN") }}</div>
+        <ml-btn size="large" class="big-btn" v-if="printTypeVal == 2 || printTypeVal == 0" @submit="printData">{{
+          $LANG_TEXT("打印") }}</ml-btn>
       </div>
     </div>
   </div>
@@ -324,30 +256,30 @@ const latestDishes = ref([]);
 watch(
   () => addedToCart.value.length,
   (nVal) => {
-  console.log("i am parparing ticket");
-  let item;
-  let indexOfArr = [];
-  addedToCart.value.forEach(element => {
-    if(!isEmpty.includes(element.index)){
-      indexOfArr.push(element.index);
-    }
-    //console.log(indexOfArr);
-    const maxIndex = indexOfArr.slice(-1);
-    //console.log(maxIndex);
-    if(element.index==maxIndex){
-      item = element;
-    }
-  });
-  //console.log(addedToCart.value.indexOf(item))
-  const index = addedToCart.value.indexOf(item)+1;
-  //console.log(index);
-  //let lastDishes = [];
-  const length = addedToCart.value.length;
-  //console.log(length);
- for(let i = index; i < length; i++){
-  latestDishes.value.push(addedToCart.value[i]);
-    //console.log(lastDishes);
-  };
+    console.log("i am parparing ticket");
+    let item;
+    let indexOfArr = [];
+    addedToCart.value.forEach(element => {
+      if (!isEmpty.includes(element.index)) {
+        indexOfArr.push(element.index);
+      }
+      //console.log(indexOfArr);
+      const maxIndex = indexOfArr.slice(-1);
+      //console.log(maxIndex);
+      if (element.index == maxIndex) {
+        item = element;
+      }
+    });
+    //console.log(addedToCart.value.indexOf(item))
+    const index = addedToCart.value.indexOf(item) + 1;
+    //console.log(index);
+    //let lastDishes = [];
+    const length = addedToCart.value.length;
+    //console.log(length);
+    for (let i = index; i < length; i++) {
+      latestDishes.value.push(addedToCart.value[i]);
+      //console.log(lastDishes);
+    };
   });
 // 订单数据查询
 // 数据
@@ -363,7 +295,7 @@ const getTemporaryOrderShoppingList = async (id) => {
     stagingCarData.value = result;
 
     setAddCarData(result);
-  } catch (error) {}
+  } catch (error) { }
 };
 // 数据
 const orderCarData = ref([]);
@@ -375,7 +307,7 @@ const getOrderShoppingList = async (id) => {
     orderCarData.value = result;
 
     setAddCarData(result, "playOrder");
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 赋值添加购物车数据
@@ -511,9 +443,8 @@ const toAddedCarData = (list) => {
         []
       );
       //本地使用 唯一标识
-      result.skuId = `${result.goodsId}-${
-        dataIds.join("-") + "-" + condmentDataIds.join("-")
-      }`;
+      result.skuId = `${result.goodsId}-${dataIds.join("-") + "-" + condmentDataIds.join("-")
+        }`;
     }
 
     // 打折金额
@@ -599,7 +530,7 @@ const getOrderIdDetail = async (id) => {
     toolForm.taxRate = result.taxRate;
 
     console.log(toolForm);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 明细列表
@@ -610,7 +541,7 @@ const getOrderAAPayDetail = async (id) => {
     const res = await proxy.$storeDispatch("fetchGetOrderPayDetailList", id);
     const result = res.result;
     payOrderList.value = result;
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 打印类型
@@ -707,7 +638,7 @@ const selectGroup = (group, isCheck) => {
 const goToCheckout = () => {
   //navigate to payment page after print ticket into the kitchen by zizhen guo
   //payment ooption: 1. pay 2. print receipt 3. later payment
-  router.push({ path: "/eatFoodDirectPayment", query: { orderId: routeParams.orderId }});
+  router.push({ path: "/eatFoodDirectPayment", query: { orderId: routeParams.orderId } });
 };
 
 // 打印数据
@@ -855,16 +786,21 @@ const langSelected = ref();
 //自动打印 zizhen guo
 const checkAutoPrinte = () => {
   selectDishe(0);
-  if(routeQuery.autoPrinted == 1){
+  if (routeQuery.autoPrinted == 1 || routeQuery.autoPrinted == 2) {
     printData();
-    router.go(-1);
-    //router.push({ path: "/eatFood", query: { orderId: routeParams.orderId,autoOpenPayment: 1 }});
+    if (routeQuery.autoPrinted == 2) {
+      printTypeVal.value = 2;
+      setTimeout(() => { printData() }, 500)
+    }
+    setTimeout(() => {
+      router.push({ path: "/main"})
+    }, 500);
   };
 };
-setTimeout(checkAutoPrinte,500);
+setTimeout(checkAutoPrinte, 500);
 // 监听返回
-watch(()=>proxy.$route.path,(nVal,old)=>{
-  if(old == '/printLog'){
+watch(() => proxy.$route.path, (nVal, old) => {
+  if (old == '/printLog') {
     router.go(-1)
   }
 })
@@ -881,8 +817,9 @@ onMounted(async () => {
 });
 </script>
   
-  <style lang="scss" scoped>
+<style lang="scss" scoped>
 $grayColor: #fdfdfd;
+
 .print-box {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -893,6 +830,7 @@ $grayColor: #fdfdfd;
   .dishes-list {
     height: 100%;
     overflow: hidden;
+
     .car-container {
       height: calc(100% - 15px);
       display: grid;
@@ -930,12 +868,15 @@ $grayColor: #fdfdfd;
           overflow-y: auto;
           padding-bottom: 15px;
           box-sizing: border-box;
+
           .list-item {
             padding-top: 10px;
             transition: 300ms;
+
             .el-checkbox {
               height: 20px;
             }
+
             &.split-item {
               padding: 0;
               margin-top: 10px;
@@ -957,9 +898,11 @@ $grayColor: #fdfdfd;
               // margin-top: 10px;
               padding: 10px 0;
               padding-bottom: 0;
+
               &.type0 {
                 padding: 0px;
               }
+
               &.type1 {
                 padding-top: 10px;
                 padding-left: 10px;
@@ -985,6 +928,7 @@ $grayColor: #fdfdfd;
               display: grid;
               grid-template-columns: auto 1fr;
               align-items: center;
+
               //   height: 40px;
               //   line-height: 40px;
               .check-item {
@@ -995,11 +939,14 @@ $grayColor: #fdfdfd;
             .product-status {
               font-size: 13px;
             }
+
             .product-price {
               width: 100%;
-              > span {
+
+              >span {
                 font-size: 14px;
                 margin-left: 5px;
+
                 .icon-discount {
                   font-size: 14px;
                 }
@@ -1019,6 +966,7 @@ $grayColor: #fdfdfd;
 
           .total-price {
             font-weight: bold;
+
             span {
               color: red;
             }
@@ -1073,6 +1021,7 @@ $grayColor: #fdfdfd;
     box-sizing: border-box;
     height: 100%;
     overflow: hidden;
+
     // 选项卡
     .print-type {
       display: flex;
@@ -1101,13 +1050,13 @@ $grayColor: #fdfdfd;
       height: fit-content;
       overflow-y: auto;
       max-height: 100%;
+
       &::-webkit-scrollbar {
         display: none;
       }
 
       &.preview1,
-      &.preview2 {
-      }
+      &.preview2 {}
 
       .all-down {
         border: 1px solid #d1dbe5;
@@ -1120,14 +1069,14 @@ $grayColor: #fdfdfd;
       }
 
       .chef {
-        > div {
-        }
+        >div {}
       }
 
-      > div {
-        > div {
+      >div {
+        >div {
           // border: 1px solid #d1dbe5;
           margin-bottom: 20px;
+
           &:nth-last-child(1) {
             margin-bottom: 0;
           }
@@ -1140,6 +1089,7 @@ $grayColor: #fdfdfd;
       margin: 0 auto;
       height: 100%;
       overflow: hidden;
+
       .ml-image {
         box-sizing: border-box;
         border: 1px solid #d1dbe5;
@@ -1166,12 +1116,13 @@ $grayColor: #fdfdfd;
 <style lang="scss">
 .chef-item {
   border: 1px solid #d1dbe5;
+
   &:nth-child(1) {
     margin-bottom: 0;
   }
+
   .ticket-box {
-    &.area-0 {
-    }
+    &.area-0 {}
   }
 }
 

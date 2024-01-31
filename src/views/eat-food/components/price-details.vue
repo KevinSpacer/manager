@@ -86,7 +86,7 @@ const getCurrOrderPirce = async () => {
       result.orderDiscount = 0;
       result.orderDiscountType = "";
     }
-    const {
+    let {
       actuallyPaidMoney,
       cashDiscountMoney,
       discountManner,
@@ -196,6 +196,11 @@ const getCurrOrderPirce = async () => {
     }
 
     // 订单金额
+    if(originalPrice.value.originPrice > orderMoney){
+      orderMoney = originalPrice.value.originPrice;
+      actuallyPaidMoney = originalPrice.value.originPrice;
+      console.log(orderMoney);
+    }
     priceDetails.value.push({
       label: `订单金额（原价）`,
       value: `$${(orderMoney || 0).toFixed(2)}`,
