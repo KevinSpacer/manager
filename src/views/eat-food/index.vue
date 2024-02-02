@@ -232,7 +232,7 @@
             <el-icon>
               <Printer />
             </el-icon>
-            {{ $LANG_TEXT("打印送厨") }}
+            {{ $LANG_TEXT("重新打印") }}
           </el-button>
           <el-button type="success" @click.stop="goBack">
             {{ $LANG_TEXT("全部订单") }}
@@ -2974,6 +2974,8 @@ const customerConfirmRemark = () => {
 watch(
   () => addedToCart.value.length,
   (nVal) => {
+    //routeParams.newItemAdded = true;
+    routeParams.isInitiatePay = "YES";
     chooseCarGoodsIndex.value = nVal - 1;
   });
 //provide below 2 to the child element of payment zizhen guo 01-25-2024
