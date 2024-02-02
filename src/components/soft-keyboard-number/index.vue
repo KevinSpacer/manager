@@ -73,13 +73,12 @@ const addressString = ref(""); //收货地址键盘信息 Oneway 1.29
 // 切换表单时将内容回显到键盘 1.31 Oneway
 watch(() => props.callerKeyboard, (newVal) => {
 	inputVal.value = ''
-	console.log(props.formObj)
 	if (newVal === 'userName') {
-		inputVal.value = props.formObj.userName ? props.formObj.userName : ''
+		inputVal.value = props.formObj ? props.formObj.userName : ''
 	} else if (newVal === 'contactWay') {
-		inputVal.value = props.formObj.contactWay ? props.formObj.contactWay : ''
+		inputVal.value = props.formObj ? props.formObj.contactWay : ''
 	} else {
-		inputVal.value = props.formObj.address ? props.formObj.address : ''
+		inputVal.value = props.formObj ? props.formObj.address : ''
 	}
 }, { immediate: true })
 

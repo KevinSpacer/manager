@@ -84,7 +84,11 @@ const mainModule = proxy.$usePiniaModule("mainModule");
 const customerDialogRef = ref();
 const customerFormRef = ref();
 // 数据
-const customerForm = reactive({});
+const customerForm = reactive({
+  userName: '',
+  contactWay: '',
+  address: ''
+});
 watch(
   () => props.data,
   (nVal) => {
