@@ -208,9 +208,11 @@ const playOver = async (call) => {
     call ? call() : "";
     return;
   }
-  if(originalPrice.value.originPrice > props.modelValue.currAcount){
+
+  if(originalPrice.value.originPrice > props.currAcount){
     console.log("new added item is here")
     playParams.addNewItem = true;
+    playParams.payAmount = originalPrice.value.originPrice;
   }
   call ? call() : "";
   emits("confirm", playParams);

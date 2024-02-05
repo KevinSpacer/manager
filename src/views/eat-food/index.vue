@@ -3018,8 +3018,7 @@ const customerConfirmRemark = () => {
 watch(
   () => addedToCart.value.length,
   (nVal) => {
-    //routeParams.newItemAdded = true;
-    routeParams.isInitiatePay = "YES";
+
     chooseCarGoodsIndex.value = nVal - 1;
   });
 //provide below 2 to the child element of payment zizhen guo 01-25-2024

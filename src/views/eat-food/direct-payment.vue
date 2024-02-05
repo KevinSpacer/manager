@@ -83,8 +83,7 @@ const getOrderPayDetail = async () => {
 
 // 结账完成
 const payOver = async (params) => {
-  //console.log(params);
-  if(!props.modelValue.id){
+  if(!props.modelValue.id || params.addNewItem){
     //console.log(params.id)
     emits("submitOrder",params)
   }else{
