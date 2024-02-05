@@ -1,46 +1,24 @@
 <template>
   <div class="login-container">
     <div class="login-box">
-      <img
-        class="logo"
-        :src="roomDetail.logo ? $previewFileUrl + roomDetail.logo : logo"
-        alt=""
-      />
+      <img class="logo" :src="roomDetail.logo ? $previewFileUrl + roomDetail.logo : logo" alt="" />
 
       <!-- <div class="fixed-bg"></div> -->
 
       <div class="login-form">
-        <ml-form
-          ref="formRef"
-          :showBtn="false"
-          :model="formData"
-          :rules="formRules"
-          labelWidth="0"
-          formSize="large"
-        >
+        <ml-form ref="formRef" :showBtn="false" :model="formData" :rules="formRules" labelWidth="0" formSize="large">
           <template #form>
             <el-form-item prop="account">
-              <el-input
-                ref="accountRef"
-                :prefix-icon="User"
-                @focus="chooseKeyDown('account')"
-                v-model.trim="formData.account"
-                :placeholder="$LANG_TEXT('请输入账号')"
-              >
+              <el-input ref="accountRef" :prefix-icon="User" @focus="chooseKeyDown('account')"
+                v-model.trim="formData.account" :placeholder="$LANG_TEXT('请输入账号')">
                 <template #prefix>
                   <!-- <el-image class="icon" :src="accountIcon"></el-image> -->
                 </template>
               </el-input>
             </el-form-item>
             <el-form-item prop="password" style="margin-bottom: 0">
-              <el-input
-                ref="passwordRef"
-                :prefix-icon="Lock"
-                @focus="chooseKeyDown('password')"
-                v-model.trim="formData.password"
-                type="password"
-                :placeholder="$LANG_TEXT('请输入密码')"
-              >
+              <el-input ref="passwordRef" :prefix-icon="Lock" @focus="chooseKeyDown('password')"
+                v-model.trim="formData.password" :placeholder="$LANG_TEXT('请输入密码')">
                 <template #prefix>
                   <!-- <el-image class="icon" :src="passwordIcon"></el-image> -->
                 </template>
@@ -51,19 +29,9 @@
 
         <!-- 按钮 -->
         <div class="btn-box">
-          <el-button
-            :loading="showLoading"
-            type="primary"
-            size="large"
-            @click="loginSubmit"
-            >{{ $LANG_TEXT("登录") }}</el-button
-          >
-          <el-button
-            type="danger"
-            size="large"
-            @click="$closeProgram"
-            class="exit-"
-          >
+          <el-button :loading="showLoading" type="primary" size="large" @click="loginSubmit">{{ $LANG_TEXT("登录")
+          }}</el-button>
+          <el-button type="danger" size="large" @click="$closeProgram" class="exit-">
             <div class="icon-box">
               <img :src="exitProgramIcon" alt="" />
               {{ $LANG_TEXT("退出程序") }}
@@ -88,41 +56,21 @@
           <p class="title" @click="onHandTen" v-else>
             {{ $LANG_TEXT("餐饮") }}
           </p>
-          <soft-keyboard-number
-            ref="keyboardRef"
-            :isString="true"
-            @confirm="keyboardConfirm"
-            v-model="formData[keyboardName]"
-          ></soft-keyboard-number>
+          <soft-keyboard-number ref="keyboardRef" :isString="true" :formObj="formData" :callerKeyboard="keyboardName"
+            @changeInput="keyDown" @confirm="keyboardConfirm" v-model="formData[keyboardName]"></soft-keyboard-number>
         </div>
       </transition>
     </div>
   </div>
 
   <!-- 服务器地址弹窗 -->
-  <ml-dialog
-    width="450px"
-    ref="serviceDialogRef"
-    :closeOnClickModal="false"
-    :title="$LANG_TEXT('服务器地址')"
-    @confirm="serviceDialogConfirm"
-  >
+  <ml-dialog width="450px" ref="serviceDialogRef" :closeOnClickModal="false" :title="$LANG_TEXT('服务器地址')"
+    @confirm="serviceDialogConfirm">
     <template #content>
-      <ml-form
-        ref="serviceFormRef"
-        :model="serviceForm"
-        :rules="serviceRules"
-        :showBtn="false"
-      >
+      <ml-form ref="serviceFormRef" :model="serviceForm" :rules="serviceRules" :showBtn="false">
         <template #form>
-          <el-form-item
-            :label="`${$LANG_TEXT('服务器地址')}：`"
-            prop="serviceUrl"
-          >
-            <el-input
-              v-model="serviceForm.serviceUrl"
-              :placeholder="$LANG_TEXT('请输入服务器地址')"
-            />
+          <el-form-item :label="`${$LANG_TEXT('服务器地址')}：`" prop="serviceUrl">
+            <el-input v-model="serviceForm.serviceUrl" :placeholder="$LANG_TEXT('请输入服务器地址')" />
           </el-form-item>
         </template>
       </ml-form>
@@ -172,14 +120,35 @@ const keyboardConfirm = (call) => {
 
 // 软键盘输入数据
 const keyboardName = ref("");
-
+let callerKeyboard = ref()
 const chooseKeyDown = (name) => {
   showKeydown.value = true;
   nextTick(() => {
     keyboardName.value = name;
+    console.log(keyboardName.value);
+    callerKeyboard.value = name
+    if (keyboardName.value === 'account') {
+      if (formData.account) {
+        keyDown(formData.account)
+      }
+    } else {
+      keyDown(formData.password)
+    }
   });
 };
+const keyDown = (value) => {
+  if (value) {
+    value = value + '';
+  }
+  if (keyboardName.value === 'account') {
+    formData.account = value
+  } else {
+    formData.password = value
+  }
+  console.log(value);
 
+
+}
 // ref
 const formRef = ref();
 const keyboardRef = ref();
@@ -290,7 +259,7 @@ const getDiningRoomSelectInfo = async () => {
     const res = await proxy.$storeDispatch("fetchGetDiningRoomSelectInfo");
     const result = res.result;
     roomDetail.value = result || {};
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 监听10次
@@ -396,8 +365,7 @@ onMounted(async () => {
       margin-bottom: 30px;
     }
 
-    .login-title {
-    }
+    .login-title {}
 
     .fixed-bg {
       width: 100%;
@@ -455,9 +423,11 @@ onMounted(async () => {
 
     .btn-box {
       width: 80%;
-      > button {
+
+      >button {
         width: 100%;
         margin: 0;
+
         &:nth-child(1) {
           margin-bottom: 10px;
         }
@@ -468,7 +438,8 @@ onMounted(async () => {
         flex-direction: row;
         align-items: center;
         justify-content: center;
-        > img {
+
+        >img {
           width: 20px;
           margin-right: 5px;
         }
@@ -489,12 +460,14 @@ onMounted(async () => {
       width: 40%;
       min-width: 450px;
     }
+
     &.noWidth {
       width: 0%;
     }
 
     .box-translate {
       width: 80%;
+
       .title {
         font-size: 75px;
         font-weight: bold;
@@ -503,16 +476,19 @@ onMounted(async () => {
         user-select: none;
       }
     }
+
     .fade-enter-active,
     .fade-leave-active {
       transition: all 300ms ease;
       transform: translateX(100%);
       opacity: 0;
     }
+
     .fade-enter-to {
       transform: translateX(0);
       opacity: 1;
     }
+
     .fade-leave-to {
       transform: translateX(100%);
       opacity: 0;

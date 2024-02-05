@@ -5,12 +5,7 @@
     </div>
 
     <div class="right-box">
-      <div
-        class="menu-item"
-        v-for="item in bodyMenuData"
-        :key="item.title"
-        @click="doActive(item)"
-      >
+      <div class="menu-item" v-for="item in bodyMenuData" :key="item.title" @click="doActive(item)">
         <el-image class="icon" :src="item.icon"></el-image>
         <p class="title">{{ item.title }}</p>
       </div>
@@ -18,84 +13,47 @@
   </div>
 
   <!-- 客户基本信息弹窗 -->
-  <customer-user-dialog
-    :eatType="eatType"
-    @confirm="customerConfirm"
-    ref="customerDialogRef"
-  >
+  <customer-user-dialog :eatType="eatType" @confirm="customerConfirm" ref="customerDialogRef">
   </customer-user-dialog>
 
   <!-- 数字键盘弹窗 -->
-  <ml-dialog
-    :showBtn="false"
-    ref="numberDialogRef"
-    class="numberDialog"
-    :title="$LANG_TEXT(currNumberDialogInfo.title)"
-  >
+  <ml-dialog :showBtn="false" ref="numberDialogRef" class="numberDialog" :title="$LANG_TEXT(currNumberDialogInfo.title)">
     <template #content>
       <div class="number-dialog-box">
         <div class="input-box">
-          <el-form
-            ref="numberFormRef"
-            :model="numberFormData"
-            :rules="numberFormRules"
-          >
+          <el-form ref="numberFormRef" :model="numberFormData" :rules="numberFormRules">
             <el-form-item :prop="currNumberDialogInfo.chooseInputName">
-              <el-input
-                class="big-keyboard"
-                :type="
-                  currNumberDialogInfo.type == 'openCashbox'
-                    ? 'password'
-                    : 'number'
-                "
-                v-model="numberFormData[currNumberDialogInfo.chooseInputName]"
-              ></el-input>
+              <el-input class="big-keyboard" :type="currNumberDialogInfo.type == 'openCashbox'
+                  ? 'password'
+                  : 'number'
+                " v-model="numberFormData[currNumberDialogInfo.chooseInputName]"></el-input>
             </el-form-item>
           </el-form>
         </div>
         <div class="number-keyboard">
-          <soft-keyboard-number
-            :isString="currNumberDialogInfo.type == 'openCashbox'"
-            @confirm="numberDialogConfirm"
-            v-model="numberFormData[currNumberDialogInfo.chooseInputName]"
-          ></soft-keyboard-number>
+          <soft-keyboard-number :isString="currNumberDialogInfo.type == 'openCashbox'" @changeInput="keyDown"
+            :callerKeyboard="callerKeyboard" @handleClose="numberDialogConfirm"
+            v-model="numberFormData[currNumberDialogInfo.chooseInputName]"></soft-keyboard-number>
         </div>
       </div>
     </template>
   </ml-dialog>
 
   <!-- 座位键盘弹窗 -->
-  <ml-dialog
-    width="595px"
-    :showBtn="false"
-    ref="seatDialogRef"
-    class="seatDialog"
-    :title="$LANG_TEXT('输入座位')"
-  >
+  <ml-dialog width="595px" :showBtn="false" ref="seatDialogRef" class="seatDialog" :title="$LANG_TEXT('输入座位')">
     <template #content>
       <div class="number-dialog-box">
         <div class="input-box">
-          <el-form
-            ref="seatFormRef"
-            :model="seatFormData"
-            :rules="seatFormRules"
-          >
+          <el-form ref="seatFormRef" :model="seatFormData" :rules="seatFormRules">
             <el-form-item prop="seat">
-              <el-input
-                class="big-keyboard"
-                v-model="seatFormData.seat"
-              ></el-input>
+              <el-input class="big-keyboard" v-model="seatFormData.seat"></el-input>
             </el-form-item>
           </el-form>
         </div>
         <div class="number-keyboard">
-          <soft-keyboard-number
-            type="seat"
-            @confirm="seatDialogConfirm"
-            :showBack="baseConfigInfo.isSelectPeopleNumber == 'YES'"
-            @back="seatBackPrev"
-            v-model="seatFormData.seat"
-          ></soft-keyboard-number>
+          <soft-keyboard-number type="seat" @confirm="seatDialogConfirm" @changeInput="keyDown" :formObj="numberFormData"
+            :showBack="baseConfigInfo.isSelectPeopleNumber == 'YES'" @back="seatBackPrev"
+            v-model="seatFormData.seat"></soft-keyboard-number>
         </div>
       </div>
     </template>
@@ -287,8 +245,11 @@ const numberFormRef = ref();
 const currNumberDialogInfo = ref({});
 // 打开弹窗
 const openNumberDialog = (item) => {
+  console.log(item);
+
   const params = item.params;
   const info = baseConfigInfo.value;
+
   // 赋值
   currNumberDialogInfo.value = params;
 
@@ -306,7 +267,7 @@ const openNumberDialog = (item) => {
         resetAddCartData();
         proxy.$navigateTo("/eatFood", {
           location: "",
-          peopleQuantity: 0,
+          peopleQuantity: '',
           type: params.type,
           waiterName: mainModule.userInfo.name,
         });
@@ -322,6 +283,7 @@ const openNumberDialog = (item) => {
   } else {
     // 打开钱箱
     numberDialogRef.value.openDialog();
+
   }
   // console.log(params)
 };
@@ -415,25 +377,38 @@ const seatDialogConfirm = async (call) => {
 // 客户基本信息
 // ref
 const customerDialogRef = ref();
+let callerKeyboard = ref()
+const keyDown = (value) => {
+  if (value) {
+    value = value + '';
+  }
+  if (currNumberDialogInfo.value.type === 'openCashbox') {
+    numberFormData[currNumberDialogInfo.value.chooseInputName] = value
+    console.log('numberFormData', numberFormData);
+    console.log('currNumberDialogInfo.chooseInputName', currNumberDialogInfo.value.chooseInputName);
+  }
+  console.log(value);
 
+
+}
 // 点餐状态
 const eatType = ref("");
 // 打开客户信息弹窗
 const openCustomerDialog = (res) => {
   const eatIn = proxy.$isUseAuth("堂食");
   // console.log(eatIn);
-  const takeOut  = proxy.$isUseAuth("外卖");
+  const takeOut = proxy.$isUseAuth("外卖");
   // console.log(eatIn);
   // console.log("I am in the method of open cus");
-  if(eatIn || takeOut){
+  if (eatIn || takeOut) {
     customerDialogRef.value.openDialog()
     eatType.value = res.params.type;
   };
-  if(!eatIn && !takeOut){
+  if (!eatIn && !takeOut) {
     eatType.value = res.params.type;
     const result = {
-      waiterName:mainModule.userInfo.name
-    } 
+      waiterName: mainModule.userInfo.name
+    }
     customerConfirm(result);
   };
 };
@@ -499,13 +474,13 @@ const closeWindow = () => {
 const checkJumpTakeOut = reactive(bodyMenuData);
 watch(
   checkJumpTakeOut,
-  (nVal) => { 
+  (nVal) => {
     // console.log(nVal);
     const eatIn = proxy.$isUseAuth("堂食");
     // console.log(eatIn);
-    const takeOut  = proxy.$isUseAuth("外卖");
+    const takeOut = proxy.$isUseAuth("外卖");
     // console.log(eatIn);
-    if(!eatIn && !takeOut){
+    if (!eatIn && !takeOut) {
       // console.log("I am going to jump to")
       doActive(nVal[0]);
     }
@@ -513,7 +488,7 @@ watch(
 onMounted(() => {
   try {
     CefSharp.BindObjectAsync("webForm");
-  } catch (error) {}
+  } catch (error) { }
 });
 </script>
 
@@ -523,7 +498,7 @@ onMounted(() => {
   grid-template-columns: 470px 1fr;
   height: 100%;
 
-  > div {
+  >div {
     height: 100%;
   }
 
@@ -545,6 +520,7 @@ onMounted(() => {
     justify-items: center;
     padding: 35px;
     box-sizing: border-box;
+
     .menu-item {
       text-align: center;
       padding: 10px;
@@ -565,9 +541,11 @@ onMounted(() => {
   margin-top: 50px;
   justify-content: center;
   margin-bottom: 65px;
+
   .exit-btn {
     width: 150px;
     height: 150px;
+
     .btn {
       width: 100%;
       height: 100%;
@@ -591,16 +569,20 @@ onMounted(() => {
 
     &.first {
       margin-right: 80px;
+
       .btn {
         background-color: #03a9f4;
+
         img {
           width: 70%;
         }
       }
     }
+
     &.second {
       .btn {
         background-color: red;
+
         img {
           width: 75%;
         }

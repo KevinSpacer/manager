@@ -14,37 +14,25 @@
     <div class="container-box">
       <div class="login-box">
         <div class="form-box">
-          <ml-form
-            ref="formRef"
-            :showBtn="false"
-            :model="formData"
-            :rules="formRules"
-            labelWidth="0"
-            formSize="large"
-          >
+          <ml-form ref="formRef" :showBtn="false" :model="formData" :rules="formRules" labelWidth="0" formSize="large">
             <template #form>
               <el-form-item prop="account">
-                <el-input
-                  class="big-keyboard"
-                  @focus="chooseKeyDown('account')"
-                  v-model.trim="formData.account"
-                  :placeholder="$LANG_TEXT('请输入账号')"
-                >
+                <el-input class="big-keyboard" @focus="chooseKeyDown('account')" v-model.trim="formData.account"
+                  :placeholder="$LANG_TEXT('请输入账号')">
                   <template #prefix>
-                    <el-icon size="20px"><User /></el-icon>
+                    <el-icon size="20px">
+                      <User />
+                    </el-icon>
                   </template>
                 </el-input>
               </el-form-item>
               <el-form-item prop="password" style="margin-bottom: 0">
-                <el-input
-                  class="big-keyboard"
-                  @focus="chooseKeyDown('password')"
-                  v-model.trim="formData.password"
-                  type="password"
-                  :placeholder="$LANG_TEXT('请输入密码')"
-                >
+                <el-input class="big-keyboard" @focus="chooseKeyDown('password')" v-model.trim="formData.password"
+                  type="password" :placeholder="$LANG_TEXT('请输入密码')">
                   <template #prefix>
-                    <el-icon size="20px"><Lock /></el-icon>
+                    <el-icon size="20px">
+                      <Lock />
+                    </el-icon>
                   </template>
                 </el-input>
               </el-form-item>
@@ -52,11 +40,8 @@
           </ml-form>
         </div>
         <div class="keyboard-box">
-          <soft-keyboard-number
-            :isString="true"
-            @confirm="keyboardConfirm"
-            v-model="formData[keyboardName]"
-          ></soft-keyboard-number>
+          <soft-keyboard-number :isString="true" :callerKeyboard="callerKeyboard" :formObj="formData"
+            @handleClose="keyboardConfirm" @changeInput="keyDown"></soft-keyboard-number>
         </div>
       </div>
 
@@ -64,9 +49,7 @@
         <div class="info-card">
           <div class="title">
             <span class="big">Hi</span>
-            <span v-if="currClockInfo.account"
-              >，{{ currClockInfo.account }}</span
-            >
+            <span v-if="currClockInfo.account">，{{ currClockInfo.account }}</span>
             <span v-else>，{{ $LANG_TEXT("请输入您的账号") }}</span>
           </div>
 
@@ -79,55 +62,17 @@
 
           <!-- 按钮 -->
           <div class="btn-box">
-            <el-button
-              class="big-btn"
-              type="primary"
-              size="large"
-              @click="openClock('BE_ON_DUTY')"
-              v-if="SHOW_ON_DUTY"
-              >{{ $LANG_TEXT("上班打卡") }}</el-button
-            ><el-button
-              class="big-btn"
-              type="primary"
-              size="large"
-              v-else
-              disabled
-              >{{ $LANG_TEXT("上班打卡") }}</el-button
-            >
+            <el-button class="big-btn" type="primary" size="large" @click="openClock('BE_ON_DUTY')" v-if="SHOW_ON_DUTY">{{
+              $LANG_TEXT("上班打卡") }}</el-button><el-button class="big-btn" type="primary" size="large" v-else disabled>{{
+    $LANG_TEXT("上班打卡") }}</el-button>
 
-            <el-button
-              class="big-btn"
-              type="danger"
-              size="large"
-              v-if="SHOW_OFF_DUTY"
-              @click="openClock('OFF_DUTY')"
-              >{{ $LANG_TEXT("下班打卡") }}</el-button
-            >
-            <el-button
-              class="big-btn"
-              type="danger"
-              size="large"
-              v-else
-              disabled
-              >{{ $LANG_TEXT("下班打卡") }}</el-button
-            >
+            <el-button class="big-btn" type="danger" size="large" v-if="SHOW_OFF_DUTY" @click="openClock('OFF_DUTY')">{{
+              $LANG_TEXT("下班打卡") }}</el-button>
+            <el-button class="big-btn" type="danger" size="large" v-else disabled>{{ $LANG_TEXT("下班打卡") }}</el-button>
 
-            <el-button
-              class="big-btn"
-              type="warning"
-              size="large"
-              @click="openClock('REST')"
-              v-if="SHOW_RESET_DUTY"
-              >{{ $LANG_TEXT("休息打卡") }}</el-button
-            >
-            <el-button
-              class="big-btn"
-              type="warning"
-              size="large"
-              v-else
-              disabled
-              >{{ $LANG_TEXT("休息打卡") }}</el-button
-            >
+            <el-button class="big-btn" type="warning" size="large" @click="openClock('REST')" v-if="SHOW_RESET_DUTY">{{
+              $LANG_TEXT("休息打卡") }}</el-button>
+            <el-button class="big-btn" type="warning" size="large" v-else disabled>{{ $LANG_TEXT("休息打卡") }}</el-button>
 
             <el-button class="big-btn" size="large" @click="router.go(-1)">{{
               $LANG_TEXT("退出")
@@ -140,7 +85,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, getCurrentInstance, nextTick } from "vue";
+import { reactive, ref, computed, getCurrentInstance, nextTick, onMounted } from "vue";
 import { User, Lock } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
 import { userTypeOpts } from "@/utils/options";
@@ -209,10 +154,10 @@ const logDetails = computed(() => {
       const val = info[paramName];
       if (paramName == "accumulativeWorkingTime") {
         const time_result = proxy.$mineToHourUnit(val || 0)
-        const hT = time_result.hour+'h'
-        const mT = time_result.mine+'m'
-        item.value = `${hT}${time_result.mine?mT:''}`
-        
+        const hT = time_result.hour + 'h'
+        const mT = time_result.mine + 'm'
+        item.value = `${hT}${time_result.mine ? mT : ''}`
+
       } else {
         item.value = val;
       }
@@ -298,7 +243,17 @@ const SHOW_RESET_DUTY = computed(() => {
   const type = info.type;
   return type == "BE_ON_DUTY";
 });
-
+// 检测键盘按下按钮 2.3 Oneway
+const keyDown = (value) => {
+  if (value) {
+    value = value + '';
+  }
+  if (keyboardName.value === 'account') {
+    formData.account = value
+  } else {
+    formData.password = value
+  }
+}
 // 软键盘确认
 const keyboardConfirm = async (call) => {
   keyboardName.value = "";
@@ -332,11 +287,22 @@ const getUserCallDetail = async (params) => {
 
 // 软键盘输入数据
 const keyboardName = ref("");
+const callerKeyboard = ref('')
 // 触发焦点 赋值
 const chooseKeyDown = (name) => {
+  callerKeyboard.value = name
   nextTick(() => {
     keyboardName.value = name;
   });
+  if (name === 'account') {
+    if (formData.account) {
+      keyDown(formData.account)
+    }
+  } else if (name === 'password') {
+    if (formData.password) {
+      keyDown(formData.password)
+    }
+  }
 };
 
 // 打卡
@@ -360,8 +326,12 @@ const openClock = async (type) => {
 
     proxy.$message.success(proxy.$LANG_TEXT(tips + "成功"));
     getUserCallDetail(loginStore.value);
-  } catch (error) {}
+  } catch (error) { }
 };
+// 初始聚焦 2.3 Oneway
+onMounted(() => {
+  chooseKeyDown('account')
+})
 </script>
 
 <style lang="scss">
@@ -396,13 +366,15 @@ const openClock = async (type) => {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     height: 100%;
-    > div {
+
+    >div {
       height: 100%;
     }
 
     .login-box {
       padding: 0px 20px;
       box-sizing: border-box;
+
       .form-box {
         width: 100%;
         display: flex;
@@ -435,6 +407,7 @@ const openClock = async (type) => {
       padding: 15px;
       height: 100%;
       box-sizing: border-box;
+
       .info-card {
         padding: 30px;
         height: 100%;
@@ -476,6 +449,7 @@ const openClock = async (type) => {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
           justify-items: center;
+
           .big-btn {
             width: 140px;
             height: 50px;

@@ -60,6 +60,18 @@ const props = defineProps({
 	formObj: {
 		type: Object,
 		default: () => { }
+	},
+	seatval: {
+		type: String,
+		default: ''
+	},
+	peopelval: {
+		type: String,
+		default: ''
+	},
+	tp: {
+		type: String,
+		default: ''
 	}
 });
 const openBack = ref(props.showBack);
@@ -73,14 +85,30 @@ const addressString = ref(""); //收货地址键盘信息 Oneway 1.29
 // 切换表单时将内容回显到键盘 1.31 Oneway
 watch(() => props.callerKeyboard, (newVal) => {
 	inputVal.value = ''
+	console.log('props.formObj', props.formObj);
+	console.log(newVal);
 	if (newVal === 'userName') {
 		inputVal.value = props.formObj ? props.formObj.userName : ''
 	} else if (newVal === 'contactWay') {
 		inputVal.value = props.formObj ? props.formObj.contactWay : ''
-	} else {
+	} else if (newVal === 'address') {
 		inputVal.value = props.formObj ? props.formObj.address : ''
+	} else if (newVal === 'account') {
+		inputVal.value = props.formObj ? props.formObj.account : ''
+	} else if (newVal === 'password') {
+		inputVal.value = props.formObj ? props.formObj.password : ''
 	}
+	else if (newVal === 'peopel') {
+		console.log(props.peopel);
+		inputVal.value = props.peopelval ? props.peopelval : ''
+	}
+	else if (newVal === 'seat') {
+		inputVal.value = props.seatval ? props.seatval : ''
+	}
+
+	console.log(inputVal.value);
 }, { immediate: true })
+
 
 
 // 按钮数据
@@ -395,19 +423,26 @@ const keyboards = computed(() => {
 
 // 按下
 const getKeyBtn = (key) => {
+	console.log(key)
 	curKeyType.value = typeof key
 	if (curKeyType.value == "string") {
 		if (key == "delete") {
 			// 清除一位输入值
+			console.log(inputVal.value);
 			if (inputVal.value) {
 				const str_val = inputVal.value.toString();
 				inputVal.value = str_val.slice(0, str_val.length - 1);
 				const str_val1 = addressString.value.toString();
 				addressString.value = str_val1.slice(0, str_val1.length - 1)
+				console.log(inputVal.value);
 			}
 		} else if (key == "confirm") {
 			// 键盘确认时收起键盘 同事表单更新 1.31 Oneway
 			emits("handleClose")
+			console.log(props.tp);
+			if (props.tp == 'EAT_IN') {
+				emits("confirm")
+			}
 			emits('changeInput', inputVal.value)
 		} else if (key == "back") {
 			emits("back", closeLoading);
@@ -419,6 +454,7 @@ const getKeyBtn = (key) => {
 	} else {
 		inputVal.value += key + '';
 	}
+	console.log(inputVal.value);
 	// 键盘内容更新到表单 1.31 Oneway
 	emits('changeInput', inputVal.value)
 };

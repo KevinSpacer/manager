@@ -490,7 +490,8 @@
         <el-input type="textarea" rows="10" @click="drawer = true" v-model="toolForm.remark"></el-input>
         <el-drawer v-model="drawer" :size="'45%'" :withHeader="false" :direction="'btt'" :before-close="handleClose">
           <div>
-            <soft-keyboard-number :type="'multi'" @update:modelValue="keyDown($event)" @confirm="customerConfirmRemark">
+            <soft-keyboard-number :type="'multi'" :formObj="formData" :callerKeyboard="keyboardName"
+              @changeInput="keyDown" @confirm="customerConfirmRemark">
             </soft-keyboard-number>
           </div>
         </el-drawer>
@@ -557,12 +558,13 @@
         <div class="input-box">
           <el-form>
             <el-form-item>
-              <el-input class="big-keyboard" v-model.number="peopelValue"></el-input>
+              <el-input class="big-keyboard" v-model="peopelValue" @click="openKeyboard('peopel')"></el-input>
             </el-form-item>
           </el-form>
         </div>
         <div class="number-keyboard">
-          <soft-keyboard-number @confirm="peopelDialogConfirm" v-model="peopelValue"></soft-keyboard-number>
+          <soft-keyboard-number :tp="routeParams.type" :peopelval="peopelValue" :callerKeyboard="callerKeyboard"
+            @confirm="peopelDialogConfirm" @handleClose="handlepeopelClose" @changeInput="keyDown"></soft-keyboard-number>
         </div>
       </div>
     </template>
@@ -575,12 +577,13 @@
         <div class="input-box">
           <el-form>
             <el-form-item>
-              <el-input class="big-keyboard" v-model="seatValue"></el-input>
+              <el-input class="big-keyboard" v-model="seatValue" @click="openKeyboard('seat')"></el-input>
             </el-form-item>
           </el-form>
         </div>
         <div class="number-keyboard">
-          <soft-keyboard-number type="seat" @confirm="seatDialogConfirm" v-model="seatValue"></soft-keyboard-number>
+          <soft-keyboard-number type="seat" :tp="routeParams.type" :seatval="seatValue" :callerKeyboard="callerKeyboard"
+            @confirm="seatDialogConfirm" @handleClose="handleseatClose" @changeInput="keyDown"></soft-keyboard-number>
         </div>
       </div>
     </template>
@@ -770,6 +773,7 @@ import { SelectProps } from "element-plus/es/components/select-v2/src/defaults";
 const { proxy } = getCurrentInstance();
 
 const route = useRoute();
+console.log(route);
 const routeQuery = reactive(route.query || {});
 const router = useRouter();
 
@@ -1969,7 +1973,7 @@ const discountNumberConfirm = (call) => {
 // ref
 const peopelDialogRef = ref();
 // 人数数据
-const peopelValue = ref();
+const peopelValue = ref('');
 // 标题
 const peopelDialogTitles = {
   peopel: "修改人数",
@@ -1980,6 +1984,7 @@ const peopelType = ref("");
 // 打开弹窗
 const openPeopelDialog = (type) => {
   peopelType.value = type;
+  console.log('peopelType.value', peopelType.value);
   if (isActionOrder.value) {
     // AA付款
     if (type == "AA") {
@@ -1994,18 +1999,19 @@ const openPeopelDialog = (type) => {
 
     // 赋值
     if (type == "peopel") {
-      peopelValue.value = routeParams.peopleQuantity;
+      peopelValue.value = routeParams.peopleQuantity ? routeParams.peopleQuantity : '';
     }
+    callerKeyboard.value = 'peopel'
     peopelDialogRef.value.openDialog();
   }
 };
 
 // 确认
-const peopelDialogConfirm = (call) => {
+const peopelDialogConfirm = () => {
   // 修改人数
   if (peopelType.value == "peopel") {
     if (peopelValue.value) {
-      routeParams.peopleQuantity = Number(peopelValue.value);
+      routeParams.peopleQuantity = peopelValue.value
     }
   }
 
@@ -2014,31 +2020,40 @@ const peopelDialogConfirm = (call) => {
     jumpPayAA();
   }
 
-  call();
+
   peopelDialogRef.value.closeDialog();
 };
 
 /* 座位弹窗 */
 // ref
 const seatDialogRef = ref();
+const callerKeyboard = ref('')
 // 座位数据
 const seatValue = ref();
 // 打开弹窗
 const openSeatDialog = () => {
+  callerKeyboard.value = 'seat'
   if (isActionOrder.value) {
     seatValue.value = routeParams.location;
     seatDialogRef.value.openDialog();
   }
 };
 // 确认
-const seatDialogConfirm = (call) => {
+const seatDialogConfirm = () => {
   if (seatValue.value) {
     routeParams.location = seatValue.value;
   }
-  call();
+
   seatDialogRef.value.closeDialog();
 };
 
+
+const handleseatClose = () => {
+  seatDialogRef.value.closeDialog();
+}
+const handlepeopelClose = () => {
+  peopelDialogRef.value.closeDialog();
+}
 // 订单数据查询
 // 数据
 const stagingCarData = ref([]);
@@ -2916,7 +2931,8 @@ const getOrderTippingList = async () => {
     toolForm.tip = data;
   }
 };
-
+const keyboardName = ref('')
+const formData = ref({})
 // 初始查询
 const init = async () => {
   // 查询顶部组合分类
@@ -2942,6 +2958,7 @@ const init = async () => {
     }
     // 赋值默认税率
     toolForm.taxRate = baseConfigInfo.value.taxRate || 0;
+
   }
 
   // 查询小费
@@ -2966,6 +2983,33 @@ const handleClose = () => {
 }
 const keyDown = (value) => {
   toolForm.remark = value;
+  console.log(value);
+  if (value) {
+    value = value + '';
+  }
+  if (keyboardName.value === 'account') {
+    formData.account = value
+  } else {
+    formData.password = value
+  }
+  if (peopelType.value === 'peopel') {
+    peopelValue.value = value
+  }
+  if (callerKeyboard.value === 'seat') {
+    seatValue.value = value
+  }
+}
+// 表单值对应至键盘 2.3 Oneway
+const openKeyboard = (tp) => {
+  if (tp === 'peopel') {
+    if (peopelValue.value) {
+      keyDown(peopelValue.value)
+    }
+  } else if (tp === 'seat') {
+    if (seatValue.value) {
+      keyDown(seatValue.value)
+    }
+  }
 }
 const customerConfirmRemark = () => {
   drawer.value = false;
