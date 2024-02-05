@@ -36,7 +36,7 @@ import { useRoute, useRouter } from "vue-router";
 const { proxy } = getCurrentInstance();
 const route = useRoute();
 const router = useRouter();
-const routeParams = route.query;
+let routeParams = route.query;
 //added emits event to call palce order
 const emits = defineEmits(["submitOrder",]);
 //
@@ -83,9 +83,9 @@ const getOrderPayDetail = async () => {
 
 // 结账完成
 const payOver = async (params) => {
-  console.log(params);
-  if(!params.id || params.addNewItem){
-    console.log(params.id)
+  //console.log(params);
+  if(!props.modelValue.id){
+    //console.log(params.id)
     emits("submitOrder",params)
   }else{
   const { payAmount } = params;
@@ -119,14 +119,8 @@ const back = () => {
     router.go(-1);
   }
 };
-
-
-
 onMounted(async () => {
-  //console.log(routeParams);
-  if(isEmpty.includes(routeParams)){
-    routeParams=modelValue
-  }
+  routeParams = props.modelValue
   if (routeParams.isInitiatePay != "YES") {
     await initiateOrderDirectPay();
   }
