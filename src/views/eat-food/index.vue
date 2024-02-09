@@ -483,7 +483,7 @@
   <ml-dialog ref="toolDialogRef" :width="toolDialogWidthObj[toolDialogType] || '50%'"
     :title="$LANG_TEXT(toolDialogTitleObj[toolDialogType])" @confirm="toolDialogConfirm" @cancel="toolCancel"
     :confirmText="$LANG_TEXT(toolDialoConfirmTextObj[toolDialogType])"
-    :cancelText="$LANG_TEXT(toolDialoCancelTextObj[toolDialogType] || '取消')" :showBtn="!toolDialogType == 'payment'">
+    :cancelText="$LANG_TEXT(toolDialoCancelTextObj[toolDialogType] || '取消')" :showBtn="!(toolDialogType == 'payment')">
     <template #content>
       <!-- 备注 -->
       <div v-if="toolDialogType == 'remark'">
@@ -535,7 +535,7 @@
       </div>
 
       <!-- 取消订单 -->
-      <div v-if="toolDialogType == 'cancelingOrder'">
+      <div v-if="toolDialogType == 'cancelingOrder' || toolDialogType == 'cancelingDish'">
         <cancelling-order v-model="toolForm.cancelingOrder"></cancelling-order>
       </div>
 
@@ -730,8 +730,13 @@
           {{ $LANG_TEXT("取消订单") }}
         </el-button>
         <!-- 自定义菜品 -->
-        <el-button :disabled="isInPay" v-if="proxy.$isUseAuth('自定义菜品')" @click.stop="openCustomGoodsDialog">
+        <el-button :disabled="isInPay" v-if="proxy.$isUseAuth('取消订单')" @click.stop="openCustomGoodsDialog">
           {{ $LANG_TEXT("自定义菜品") }}
+        </el-button>
+        <!-- 取消菜品  -->
+        <el-button :disabled="isInPay" v-if="proxy.$isUseAuth('自定义菜品')" @click.stop="deleteDishesReason">
+          <el-icon><Delete /></el-icon>
+          {{ $LANG_TEXT("取消菜品") }}
         </el-button>
       </div>
     </template>
@@ -1255,6 +1260,11 @@ const cancelDishes = async (ids) => {
     ids,
   });
 };
+// 删除菜品原因
+const deleteDishesReason = async () => {
+  openToolDialog("cancelingDish")
+};
+
 // 删除菜品操作
 const deleteDishes = async () => {
   const index = chooseCarGoodsIndex.value;
@@ -1849,6 +1859,12 @@ const toolDialogConfirm = async (call) => {
       await getOrderIdDetail(routeParams.orderId);
       // 关闭
       closeToolDialog(call);
+      break;
+    //删除一个菜品
+    case "cancelingDish":
+      deleteDishes()
+      closeToolDialog(call);
+      otherDialogRef.value.closeDialog();
       break;
   }
 };
