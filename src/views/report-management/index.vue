@@ -108,7 +108,7 @@ const getSelectOrderMoneyStatistics = async () => {
   try {
     const res = await proxy.$storeDispatch(
       "fetchSelectOrderMoneyStatistics",
-      currDateTime.value
+      currDateTime
     );
     const result = res.result;
 
