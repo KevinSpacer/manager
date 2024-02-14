@@ -62,12 +62,9 @@
                   <!-- 菜品、套餐 -->
                   <div class="first-item">
                     <div class="product-name" @click.stop="changeCarListItem(index)">
-                      <second-language class="oneLineOver"
-                        :firstText="`${item.name}(${item.dishesSpecificationList[0].dishesSpecificationAttributeList[0].name})`"
+                      <second-language class="oneLineOver" :firstText="item.name"
                         :secondText="item.nameLanguage || item.name"></second-language>
-
                     </div>
-                    <!-- {{item}} -->
                     <div class="product-status" @click.stop="changeCarListItem(index)">
                       {{ $LANG_TEXT(item.orderType ? "已下单" : "") }}
                     </div>
@@ -82,7 +79,7 @@
                       <span v-else>{{ item.goodsQuantity }}</span>
                     </div>
                     <div class="product-price" @click.stop="changeCarListItem(index)">
-                      ${{ (item.originPrice * item.goodsQuantity || 0).toFixed(2) }}
+                      ${{ (item.price * item.goodsQuantity || 0).toFixed(2) }}
 
                       <!-- 折扣 -->
                       <span>
@@ -92,14 +89,19 @@
                           Number(item.dishesDiscount) &&
                           item.dishesDiscount != 100
                           ">
-                          (${{ item.originPrice }})
+                          (${{ item.discountPrice }})
+                          <!-- (-{{
+                            item.dishesDiscount
+                          }}%) -->
                         </span>
-
                         <!-- 定额 -->
                         <span v-if="item.dishesDiscountType == 'QUOTA' &&
                           Number(item.dishesDiscount)
                           ">
                           (${{ item.discountPrice }})
+                          <!-- (-${{
+                            item.dishesDiscount
+                          }}) -->
                         </span>
                       </span>
                     </div>
@@ -1085,7 +1087,7 @@ const currCombine = computed(() => {
 // 加入购物车
 // ref
 const joinCarRef = ref();
-const curDelItem = ref({})
+
 //右侧 菜品数量变动 加入购物车
 const rightChangeCount = (count, item) => {
   // 已加入购物车中是否存在该菜品
@@ -1281,10 +1283,8 @@ const deleteDishes = async () => {
 };
 //删除调味品
 const deleteCondiment = (value, index) => {
-  curDelItem.value = value
   console.log(value);
   console.log(index);
-  console.log(addedToCart.value[index].customDishesSpicesList);
   let specificationExist = value.item.dishesSpecificationAttributeList
   let spiceExist = value.item.dishesSpicesAttributeList
   let condiIndex = value.index;
@@ -3224,7 +3224,7 @@ $grayColor: #fdfdfd;
 
               .product-name {
                 width: 100%;
-                // overflow: hidden;
+                overflow: hidden;
                 padding-left: 10px;
                 box-sizing: border-box;
                 font-size: 16px;
@@ -3401,4 +3401,5 @@ $grayColor: #fdfdfd;
     height: 90%;
     margin: 2.5%;
   }
-}</style>
+}
+</style>
