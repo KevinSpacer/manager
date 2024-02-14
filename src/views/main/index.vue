@@ -32,7 +32,7 @@
         </div>
         <div class="number-keyboard">
           <soft-keyboard-number :isString="currNumberDialogInfo.type == 'openCashbox'" @changeInput="keyDown"
-            :callerKeyboard="callerKeyboard" @handleClose="numberDialogConfirm"
+            :callerKeyboard="callerKeyboard" @handleClose="numberDialogConfirm" :formObj="numberFormData"
             v-model="numberFormData[currNumberDialogInfo.chooseInputName]"></soft-keyboard-number>
         </div>
       </div>
@@ -51,7 +51,7 @@
           </el-form>
         </div>
         <div class="number-keyboard">
-          <soft-keyboard-number type="seat" @confirm="seatDialogConfirm" @changeInput="keyDown" :formObj="numberFormData"
+          <soft-keyboard-number type="seat" @confirm="seatDialogConfirm" @changeInput="keyDown" :formObj="seatFormData" :callerKeyboard="callerKeyboard"
             :showBack="baseConfigInfo.isSelectPeopleNumber == 'YES'" @back="seatBackPrev"
             v-model="seatFormData.seat"></soft-keyboard-number>
         </div>
@@ -252,12 +252,14 @@ const openNumberDialog = (item) => {
 
   // 赋值
   currNumberDialogInfo.value = params;
+  console.log(currNumberDialogInfo.value);
 
   // 重置
   proxy.$updateParams(numberFormData, defaultNumberForm());
 
   // 堂食
   if (params.type == "EAT_IN") {
+    callerKeyboard.value = 'peopel'
     // 堂食是否需要选择人数
     if (info.isSelectPeopleNumber == "YES" && info.isSelectSeat == "YES") {
       numberDialogRef.value.openDialog();
@@ -275,8 +277,10 @@ const openNumberDialog = (item) => {
         // 不需要选择人数
         if (info.isSelectPeopleNumber == "NO") {
           seatDialogRef.value.openDialog();
+          callerKeyboard.value = 'seat'
         } else {
           numberDialogRef.value.openDialog();
+          callerKeyboard.value = 'seat'
         }
       }
     }
@@ -291,13 +295,13 @@ const openNumberDialog = (item) => {
 // 确认
 const numberDialogConfirm = async (call) => {
   const { type } = currNumberDialogInfo.value;
-
+console.log(type);
   // console.log(currNumberDialogInfo.value);
   // 堂食
   if (type == "EAT_IN") {
     const testRes = await proxy.$testForm(call, numberFormRef.value);
     const info = baseConfigInfo.value;
-
+console.log(info);
     if (!testRes) {
       return;
     }
@@ -316,8 +320,9 @@ const numberDialogConfirm = async (call) => {
       call();
     } else {
       nextTick(() => {
-        call();
+        // call();
         seatDialogRef.value.openDialog();
+        callerKeyboard.value = 'seat'
       });
     }
   } else if (type == "openCashbox") {
@@ -325,9 +330,9 @@ const numberDialogConfirm = async (call) => {
     // console.log(numberFormData);
     numberDialogRef.value.closeDialog();
     proxy.$tipsPending();
-    nextTick(() => {
-      call();
-    });
+    // nextTick(() => {
+    //   call();
+    // });
   }
 };
 
@@ -359,10 +364,11 @@ const seatDialogConfirm = async (call) => {
   if (!testRes) {
     return;
   }
-
+console.log('进入');
   seatDialogRef.value.closeDialog();
 
   nextTick(() => {
+    console.log('进入11');
     resetAddCartData();
     proxy.$navigateTo("/eatFood", {
       location: seatFormData.seat,
@@ -379,14 +385,26 @@ const seatDialogConfirm = async (call) => {
 const customerDialogRef = ref();
 let callerKeyboard = ref()
 const keyDown = (value) => {
+  console.log(value);
   if (value) {
     value = value + '';
   }
-  if (currNumberDialogInfo.value.type === 'openCashbox') {
+  if(callerKeyboard.value === 'seat'){
+    seatFormData.seat = value
+  }else {
     numberFormData[currNumberDialogInfo.value.chooseInputName] = value
-    console.log('numberFormData', numberFormData);
-    console.log('currNumberDialogInfo.chooseInputName', currNumberDialogInfo.value.chooseInputName);
   }
+ 
+  // console.log(currNumberDialogInfo.value)
+  // if (currNumberDialogInfo.value.type === 'openCashbox') {
+  //   numberFormData[currNumberDialogInfo.value.chooseInputName] = value
+  //   console.log('numberFormData', numberFormData);
+  //   console.log('currNumberDialogInfo.chooseInputName', currNumberDialogInfo.value.chooseInputName);
+  // }else {
+  //   numberFormData[currNumberDialogInfo.value.chooseInputName] = value
+  //   console.log('numberFormData', numberFormData);
+  //   console.log('currNumberDialogInfo.chooseInputName', currNumberDialogInfo.value.chooseInputName);
+  // }
   console.log(value);
 
 
@@ -446,6 +464,7 @@ const clientAdd = async (result) => {
 // 座位返回上一步
 const seatBackPrev = (close) => {
   seatDialogRef.value.closeDialog();
+  callerKeyboard.value = ''
   openNumberDialog(bodyMenuData.value[0]);
 };
 

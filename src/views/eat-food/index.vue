@@ -62,9 +62,12 @@
                   <!-- 菜品、套餐 -->
                   <div class="first-item">
                     <div class="product-name" @click.stop="changeCarListItem(index)">
-                      <second-language class="oneLineOver" :firstText="item.name"
+                      <second-language class="oneLineOver"
+                        :firstText="`${item.name}(${item.dishesSpecificationList[0].dishesSpecificationAttributeList[0].name})`"
                         :secondText="item.nameLanguage || item.name"></second-language>
+
                     </div>
+                    <!-- {{item}} -->
                     <div class="product-status" @click.stop="changeCarListItem(index)">
                       {{ $LANG_TEXT(item.orderType ? "已下单" : "") }}
                     </div>
@@ -79,7 +82,7 @@
                       <span v-else>{{ item.goodsQuantity }}</span>
                     </div>
                     <div class="product-price" @click.stop="changeCarListItem(index)">
-                      ${{ (item.price * item.goodsQuantity || 0).toFixed(2) }}
+                      ${{ (item.originPrice * item.goodsQuantity || 0).toFixed(2) }}
 
                       <!-- 折扣 -->
                       <span>
@@ -89,19 +92,14 @@
                           Number(item.dishesDiscount) &&
                           item.dishesDiscount != 100
                           ">
-                          (${{ item.discountPrice }})
-                          <!-- (-{{
-                            item.dishesDiscount
-                          }}%) -->
+                          (${{ item.originPrice }})
                         </span>
+
                         <!-- 定额 -->
                         <span v-if="item.dishesDiscountType == 'QUOTA' &&
                           Number(item.dishesDiscount)
                           ">
                           (${{ item.discountPrice }})
-                          <!-- (-${{
-                            item.dishesDiscount
-                          }}) -->
                         </span>
                       </span>
                     </div>
@@ -450,7 +448,7 @@
           </div>
         </div>
         <div>
-          <condiment v-if="chooseCarGoodsIndex.value === 0 || chooseCarGoodsIndex !== ''" />
+          <condiment v-if="chooseCarGoodsIndex.value === 0 || chooseCarGoodsIndex !== ''" :delItem="curDelItem" />
         </div>
         <!--菜谱列表 2 row: deleted below part becasue only keep the one prodcut component all information is laoded by below component! by zizhen guo -->
       </div>
@@ -558,7 +556,8 @@
         <div class="input-box">
           <el-form>
             <el-form-item>
-              <el-input class="big-keyboard" v-model="peopelValue" @click="openKeyboard('peopel')"></el-input>
+              <el-input ref="peopelInputRef" class="big-keyboard" v-model="peopelValue"
+                @click="openKeyboard('peopel')"></el-input>
             </el-form-item>
           </el-form>
         </div>
@@ -577,7 +576,8 @@
         <div class="input-box">
           <el-form>
             <el-form-item>
-              <el-input class="big-keyboard" v-model="seatValue" @click="openKeyboard('seat')"></el-input>
+              <el-input ref="seatInputRef" class="big-keyboard" v-model="seatValue"
+                @click="openKeyboard('seat')"></el-input>
             </el-form-item>
           </el-form>
         </div>
@@ -822,6 +822,7 @@ const otherPriceType = {
 const { eatFoodModule, mainModule } = proxy.$usePiniaModule();
 // 已加入购物车
 const { addedToCart } = storeToRefs(eatFoodModule);
+console.log('已加入购物车数据', addedToCart.value);
 
 // 基本信息
 const baseConfigInfo = computed(() => mainModule.baseConfigInfo);
@@ -1079,7 +1080,7 @@ const currCombine = computed(() => {
 // 加入购物车
 // ref
 const joinCarRef = ref();
-
+const curDelItem = ref({})
 //右侧 菜品数量变动 加入购物车
 const rightChangeCount = (count, item) => {
   // 已加入购物车中是否存在该菜品
@@ -1270,8 +1271,10 @@ const deleteDishes = async () => {
 };
 //删除调味品
 const deleteCondiment = (value, index) => {
+  curDelItem.value = value
   console.log(value);
   console.log(index);
+  console.log(addedToCart.value[index].customDishesSpicesList);
   let specificationExist = value.item.dishesSpecificationAttributeList
   let spiceExist = value.item.dishesSpicesAttributeList
   let condiIndex = value.index;
@@ -1974,6 +1977,8 @@ const discountNumberConfirm = (call) => {
 const peopelDialogRef = ref();
 // 人数数据
 const peopelValue = ref('');
+const peopelInputRef = ref(null)
+const seatInputRef = ref(null)
 // 标题
 const peopelDialogTitles = {
   peopel: "修改人数",
@@ -1984,7 +1989,7 @@ const peopelType = ref("");
 // 打开弹窗
 const openPeopelDialog = (type) => {
   peopelType.value = type;
-  console.log('peopelType.value', peopelType.value);
+  // console.log('peopelType.value', peopelType.value);
   if (isActionOrder.value) {
     // AA付款
     if (type == "AA") {
@@ -2003,6 +2008,9 @@ const openPeopelDialog = (type) => {
     }
     callerKeyboard.value = 'peopel'
     peopelDialogRef.value.openDialog();
+    nextTick(() => {
+      peopelInputRef.value.focus()
+    })
   }
 };
 
@@ -2036,6 +2044,9 @@ const openSeatDialog = () => {
   if (isActionOrder.value) {
     seatValue.value = routeParams.location;
     seatDialogRef.value.openDialog();
+    nextTick(() => {
+      seatInputRef.value.focus()
+    })
   }
 };
 // 确认
@@ -2643,8 +2654,8 @@ const getTotalOrderAmount = computed(() => {
     payResult += tip.payAmount || 0;
   }
 
-  console.log(originResult);
-  console.log(payResult);
+  // console.log(originResult);
+  // console.log(payResult);
 
   // 遍历计算
   // 原价
@@ -2664,14 +2675,14 @@ const getTotalOrderAmount = computed(() => {
 watch(
   () => getTotalOrderAmount.value.payPrice,
   (nVal) => {
-    console.log("抹零前");
-    console.log(nVal);
+    // console.log("抹零前");
+    // console.log(nVal);
     toolForm.notCount.maLingMoney = proxy.$erasurePrice(
       nVal,
       toolForm.notCount.maLingType
     );
-    console.log("抹零后");
-    console.log(toolForm.notCount.maLingMoney);
+    // console.log("抹零后");
+    // console.log(toolForm.notCount.maLingMoney);
   }
 );
 
@@ -3197,7 +3208,7 @@ $grayColor: #fdfdfd;
 
               .product-name {
                 width: 100%;
-                overflow: hidden;
+                // overflow: hidden;
                 padding-left: 10px;
                 box-sizing: border-box;
                 font-size: 16px;
@@ -3374,5 +3385,4 @@ $grayColor: #fdfdfd;
     height: 90%;
     margin: 2.5%;
   }
-}
-</style>
+}</style>

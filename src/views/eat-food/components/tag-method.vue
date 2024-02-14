@@ -72,12 +72,17 @@ const changeTag = (item) => {
 	width: 100%;
 
 	.tag-list {
-		margin: 15px 0;
-		width: 92%;
+		// margin: 15px 0;
+		width: 100%;
+		display: flex;
+		// justify-content: space-between;
 
 		> .tag {
 			margin-right: 15px;
 			margin-bottom: 15px;
+		}
+		.el-check-tag{
+			padding: 5px;
 		}
 	}
 

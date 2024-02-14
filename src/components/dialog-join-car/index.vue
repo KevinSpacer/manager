@@ -120,11 +120,11 @@
 		<template #btn>
 			<div class="dialog-btn">
 				<div class="left">{{ $LANG_TEXT("总计") }}：${{ chooseSpecTotal }}</div>
-				<div class="right">
+				<!-- <div class="right">
 					<el-button type="primary" @click="submitJoinCar">{{
 						$LANG_TEXT("加入购物车")
 					}}</el-button>
-				</div>
+				</div> -->
 			</div>
 		</template>
 	</ml-dialog>
@@ -382,7 +382,9 @@ const chooseSpecTotal = computed(() => {
 });
 // 选中规格ID
 const changeSpecIds = (id, pIndex) => {
+	console.log(id,pIndex);
 	actionChooseIds(chooseSpecIds.value, id, pIndex);
+	submitJoinCar()
 };
 // 选中规格ID
 const changeCondIds = (id, pIndex) => {
@@ -505,6 +507,7 @@ const submitJoinCar = () => {
 	if (props.goodsType == "DISHES") {
 		// 规格
 		obj.dishesSpecificationList = sureCarData.value;
+		console.log(obj.dishesSpecificationList)
 		// 调味品
 		obj.dishesSpicesList = sureCondmentCarData.value;
 	} else {

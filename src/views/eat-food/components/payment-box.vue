@@ -6,8 +6,9 @@
       <tag-method v-model="chooseType" :options="playTypeList"></tag-method>
       <p class="give-change" v-if="chooseType == 4">
         <span>{{ $LANG_TEXT("找零") }}：</span>
-        <span v-if="playParams.id">${{ (playParams.payAmount - currAcount).toFixed(2) }}</span>
-        <span v-else>${{ (playParams.payAmount - originalPrice.originPrice).toFixed(2) }}</span>
+        <span v-if="playParams.id">${{ payReceive }}</span>
+        <span v-else>${{ payReceive }}</span>
+        <!-- <span>{{ replayPrice }}</span> -->
       </p>
     </div>
     <div class="display" v-if="chooseType == 4">
@@ -79,7 +80,7 @@ const { proxy } = getCurrentInstance();
 const route = useRoute();
 const router = useRouter();
 const routeParams = route.query;
-
+const payReceive = ref(0)
 const emits = defineEmits([
   "confirm",
   "printBill",
@@ -137,6 +138,17 @@ const giveChange = computed(() => {
   return (price2 - price1).toFixed(2);
 });
 
+// const replayPrice = computed(() => {
+//   if (playParams) {
+//     if (playParams.id) {
+//       var price = (playParams.payAmount - currAcount).toFixed(2)
+//     } else {
+//       var price = (playParams.payAmount - originalPrice).toFixed(2)
+//     }
+//     console.log(price);
+//   }
+// })
+
 // 结账数据
 const playParams = reactive({
   ...props.modelValue,
@@ -156,7 +168,7 @@ const openPayBtn = ref(props.openPayBtn);
 watch(
   () => props.openPayBtn,
   (nVal) => {
-    // console.log(nVal);
+    console.log(nVal);
     openPayBtn.value = nVal;
   }
 );
@@ -209,7 +221,7 @@ const playOver = async (call) => {
     return;
   }
 
-  if(originalPrice.value.originPrice > props.currAcount){
+  if (originalPrice.value.originPrice > props.currAcount) {
     console.log("new added item is here")
     playParams.addNewItem = true;
     playParams.payAmount = originalPrice.value.originPrice;
@@ -221,12 +233,32 @@ const playOver = async (call) => {
 //支付按钮
 const payOverBtn = async (value, call) => {
   playParams.payAmount = value;
+  console.log(playParams.payAmount);
   if (!openPayBtn.value) {
     call ? call() : "";
     return;
   }
   call ? call() : "";
   //emits("confirm", playParams);
+
+  if (playParams.id) {
+    console.log(1);
+    console.log(props.currAcount);
+    payReceive.value = (playParams.payAmount - props.currAcount).toFixed(2)
+  } else {
+    console.log(2);
+    console.log(originalPrice);
+    payReceive.value = (playParams.payAmount - originalPrice.value.originPrice).toFixed(2)
+  }
+  console.log(payReceive.value);
+  if (payReceive.value < 0) {
+    payReceive.value = 0
+    proxy.$message({
+      message: proxy.$LANG_TEXT("当前金额不够找零"),
+    });
+  }
+
+  // 
 };
 // 打印账单
 const printBill = async (value) => {

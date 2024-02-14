@@ -75,7 +75,7 @@ const props = defineProps({
 	}
 });
 const openBack = ref(props.showBack);
-const inputVal = ref(props.modelValue);
+const inputVal = ref('');
 const curKeyType = ref('String') //当前点击键盘类型 字符串/数字
 // 是否已点击确认
 const isConfirm = ref(false);
@@ -440,9 +440,10 @@ const getKeyBtn = (key) => {
 			// 键盘确认时收起键盘 同事表单更新 1.31 Oneway
 			emits("handleClose")
 			console.log(props.tp);
-			if (props.tp == 'EAT_IN') {
+			if (props.tp == 'EAT_IN' || props.callerKeyboard === 'seat') {
 				emits("confirm")
 			}
+			
 			emits('changeInput', inputVal.value)
 		} else if (key == "back") {
 			emits("back", closeLoading);
@@ -450,11 +451,15 @@ const getKeyBtn = (key) => {
 			inputVal.value = "";
 		} else {
 			inputVal.value += key;
+			console.log(inputVal.value);
 		}
 	} else {
+		console.log(inputVal.value);
 		inputVal.value += key + '';
+		
+		console.log(inputVal.value);
 	}
-	console.log(inputVal.value);
+	
 	// 键盘内容更新到表单 1.31 Oneway
 	emits('changeInput', inputVal.value)
 };

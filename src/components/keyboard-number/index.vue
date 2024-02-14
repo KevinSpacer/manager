@@ -190,10 +190,11 @@ defineExpose({
     .all-number {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(4, 20px);
+      grid-gap: 5px;
+      grid-template-rows: repeat(3, 40px);
       .key-item {
-        width: 90%;
-        height: 90%;
+        width: 100%;
+        height: 100%;
         background-color: white;
         border-radius: 10px;
         display: flex;
@@ -209,15 +210,17 @@ defineExpose({
     }
 
     .price-box {
+      margin-top: 5px;
       display: grid;
       grid-template-columns: 1fr 135px;
-      grid-template-rows: 90px;
+      grid-template-rows: 40px;
+      grid-gap: 5px;
       align-items: center;
       justify-items: center;
 
       .zero,
       .float {
-        width: 94%;
+        width: 98%;
         height: 90%;
         background-color: white;
         border-radius: 10px;
@@ -243,6 +246,7 @@ defineExpose({
     .delete,
     .confirm {
       width: 90%;
+      height: 40px;
       background-color: white;
       border-radius: 10px;
       display: flex;
