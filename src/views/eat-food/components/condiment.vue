@@ -3,49 +3,61 @@
   <div class="condiment-container">
     <!-- 调味品组合 -->
     <div class="condiment-classify">
-      <tab-scroll v-model="chooseCondimentClassify" :options="{
-        keyName: 'name',
-        valueName: 'id',
-      }" :optionsSecond="{
-  keyName: 'nameLanguage',
-  valueName: 'id',
-}" :data="spicesCondimentList"></tab-scroll>
+      <tab-scroll
+        v-model="chooseCondimentClassify"
+        :options="{
+          keyName: 'name',
+          valueName: 'id',
+        }"
+        :optionsSecond="{
+          keyName: 'nameLanguage',
+          valueName: 'id',
+        }"
+        :data="spicesCondimentList"
+      ></tab-scroll>
     </div>
 
     <!-- 调味品内容 -->
     <div class="condiment-box">
       <div class="left-container">
         <!-- 标准调味品 -->
-        <div class="normal-condiment condiment ml-scrollbar flex flex-col">
-          <div class="condiment-item"
-            :class="{ active: beforeCarCondimentIdsList && beforeCarCondimentIdsList.includes(item.id) }"
-            @click="changeCondiment(item)" v-for="(item, index) in normalCondimentData" :key="'item' + index">
-            <second-language :firstText="item.name" :secondText="item.nameLanguage"></second-language>
+        <div class="normal-condiment condiment ml-scrollbar">
+          <div
+            class="condiment-item"
+            :class="{ active: beforeCarCondimentIds.includes(item.id) }"
+            @click="changeCondiment(item)"
+            v-for="(item, index) in normalCondimentData"
+            :key="'item' + index"
+          >
+            <second-language
+              :firstText="item.name"
+              :secondText="item.nameLanguage"
+            ></second-language>
           </div>
-
         </div>
-        <div class="flex" v-if="beforeCarCondimentIdsList && beforeCarCondimentIdsList.length > 0">
-          <div class="num-item" :class="{ active: numAct === item.val }" @click="changelen(item)"
-            v-for="(item, index) in numCount" :key="'item' + index">
-            <second-language :firstText="item.name" :secondText="item.nameLanguage"></second-language>
-          </div>
-        </div>
-
 
         <!-- 自定义调味品 -->
       </div>
-
-      <!-- 常规 -->
-      <!-- 自定义 -->
+        <!-- 常规 -->
+        <!-- 自定义 -->
     </div>
   </div>
 
   <!-- 自定义价格弹窗 -->
-  <ml-dialog :showBtn="false" ref="priceDialogRef" class="priceDialog" :title="$LANG_TEXT('自定义价格')">
+  <ml-dialog
+    :showBtn="false"
+    ref="priceDialogRef"
+    class="priceDialog"
+    :title="$LANG_TEXT('自定义价格')"
+  >
     <template #content>
       <div class="condiment-price ml-scrollbar">
-        <div class="condiment-item" v-for="(item, index) in customPriceData" :key="'item-price' + index"
-          @click="changeCustomPrice(item)">
+        <div
+          class="condiment-item"
+          v-for="(item, index) in customPriceData"
+          :key="'item-price' + index"
+          @click="changeCustomPrice(item)"
+        >
           ${{ item.price }}
         </div>
 
@@ -57,18 +69,34 @@
   </ml-dialog>
 
   <!-- 数字键盘弹窗 -->
-  <ml-dialog width="fit-content" :showBtn="false" ref="numberDialogRef" class="numberDialog" :title="$LANG_TEXT('自定义价格')">
+  <ml-dialog
+    width="fit-content"
+    :showBtn="false"
+    ref="numberDialogRef"
+    class="numberDialog"
+    :title="$LANG_TEXT('自定义价格')"
+  >
     <template #content>
       <div class="number-dialog-box">
         <div class="input-box">
-          <el-form ref="numberFormRef" :model="numberFormData" :rules="numberFormRules">
+          <el-form
+            ref="numberFormRef"
+            :model="numberFormData"
+            :rules="numberFormRules"
+          >
             <el-form-item prop="price">
-              <el-input class="big-keyboard" v-model="numberFormData.price"></el-input>
+              <el-input
+                class="big-keyboard"
+                v-model="numberFormData.price"
+              ></el-input>
             </el-form-item>
           </el-form>
         </div>condiment
         <div class="number-keyboard">
-          <keyboard-number @confirm="numberDialogConfirm" v-model="numberFormData.price">
+          <keyboard-number
+            @confirm="numberDialogConfirm"
+            v-model="numberFormData.price"
+          >
           </keyboard-number>
           <!-- <soft-keyboard-number
 						
@@ -93,33 +121,11 @@ import {
 import { useRoute, useRouter } from "vue-router";
 import tabScroll from "@/components/tab-scroll";
 import { testPositiveNumberFlot } from "@/utils/regExp";
-
-const props = defineProps({
-  delItem: {
-    type: Object,
-    default: () => { }
-  }
-})
-
-watch(() => props.delItem, (nval) => {
-  console.log(nval);
-  console.log(beforeCarCondimentIds.value);
-  // changeCondiment(nval)
-})
 const route = useRoute();
 const router = useRouter();
 const routeParams = route.query;
 const { proxy } = getCurrentInstance();
-const numCount = ref([{
-  name: '少',
-  val: 0
 
-},
-{
-  name: '多',
-  val: 1
-}])
-const numAct = ref(0)
 // 校验
 const testPositiveNumberFlotValid = (rules, value, call) => {
   if (value) {
@@ -135,7 +141,7 @@ const testPositiveNumberFlotValid = (rules, value, call) => {
 
 const eatFoodModule = proxy.$usePiniaModule("eatFoodModule");
 // 已加入购物车
-const addedToCart = eatFoodModule.addedToCart
+const addedToCart = eatFoodModule.addedToCart;
 
 // 选中的调味品组合
 const chooseCondimentClassify = ref("");
@@ -148,7 +154,6 @@ watch(
 
 // 调味品组合列表数据
 const spicesCondimentList = ref([]);
-const beforeCarCondimentIdsList = ref([])
 // 查询调味品组合
 const getCondiemntClassify = async () => {
   try {
@@ -156,7 +161,7 @@ const getCondiemntClassify = async () => {
     const result = res.result;
     spicesCondimentList.value = result;
     chooseCondimentClassify.value = (result[0] || {}).id;
-  } catch (error) { }
+  } catch (error) {}
 };
 
 // 全标准调味品数据对象
@@ -165,12 +170,9 @@ const normalAllCondimentObj = ref({});
 const normalAllCondimentList = computed(() => {
   return Object.keys(normalAllCondimentObj.value).reduce((add, curr) => {
     const item = normalAllCondimentObj.value[curr];
-    console.log(item);
-    console.log(add)
     return add.concat(item);
   }, []);
 });
-
 //当前展示 标准调味品
 const normalCondimentData = ref([]);
 // 根据选中组合查询 标准调味品
@@ -186,8 +188,7 @@ const getCondimentIdDataList = async () => {
     normalCondimentData.value = result;
 
     normalAllCondimentObj.value[spicesCombineId] = result;
-    console.log(normalAllCondimentObj.value);
-  } catch (error) { }
+  } catch (error) {}
 };
 
 // 自定义调味品
@@ -197,7 +198,7 @@ const getCustomCondimentData = async () => {
     const res = await proxy.$storeDispatch("fetchGetCustomSpicesList");
     const result = res.result;
     customCondimentData.value = result;
-  } catch (error) { }
+  } catch (error) {}
 };
 
 // 自定义价格
@@ -207,13 +208,13 @@ const getCustomPriceData = async () => {
     const res = await proxy.$storeDispatch("fetchGetCustomPriceList");
     const result = res.result;
     customPriceData.value = result;
-  } catch (error) { }
+  } catch (error) {}
 };
 
 // 要加入购物车的调味品
 let beforeCarCondimentIds = ref([]);
 const beforeCarCondiment = computed(() => {
-  const chooseIds = beforeCarCondimentIdsList.value;
+  const chooseIds = beforeCarCondimentIds.value;
   // 标准
   const result = [
     ...normalAllCondimentList.value,
@@ -223,33 +224,18 @@ const beforeCarCondiment = computed(() => {
   return result;
 });
 // 已选择的常规
-const sureNormal = computed(() => {
-  // console.log([...ormalAllCondimentList.value]);
-  console.log(beforeCarCondimentIdsList.value);
-  const res = normalAllCondimentList.value.filter((item) => {
-    return beforeCarCondimentIdsList.value.includes(item.id)
-  }
+const sureNormal = computed(() =>
+  normalAllCondimentList.value.filter((item) =>
+    beforeCarCondimentIds.value.includes(item.id)
   )
-  console.log(res);
-  return res
-}
-
 );
 
 // 选择加入购物车的调味品
 const changeCondiment = (item, type, currIndex) => {
-  console.log(item);
-  curItem.value = item
   const id = item.id;
-  const condiObj = {
-    id: id,
-    amount: 0
-  }
-  // beforeCarCondimentIds.value.push(condiObj);
-  console.log(beforeCarCondimentIdsList.value);
-  const index = beforeCarCondimentIds.value.findIndex((d) => d.id === id);
-  console.log(index);
-  // console.log(type)
+  const index = beforeCarCondimentIds.value.findIndex((d) => d == id);
+
+  //console.log(type)
   // console.log(currIndex)
   // console.log(index)
   // console.log(beforeCarCondimentIds.value.includes(id))
@@ -257,10 +243,8 @@ const changeCondiment = (item, type, currIndex) => {
   // console.log(chooseCustomConds.value)
   // 静态删除调味品
   if (type == "delete") {
-    console.log(1);
     // 未在动态调味品中
-    if (!beforeCarCondimentIdsList.value.includes(id)) {
-      console.log(1);
+    if (!beforeCarCondimentIds.value.includes(id)) {
       // 删除静态调味品
       chooseCustomConds.value.splice(currIndex, 1);
     } else {
@@ -269,39 +253,22 @@ const changeCondiment = (item, type, currIndex) => {
     }
   } else {
     // 已加入ID
-    if (beforeCarCondimentIdsList.value && beforeCarCondimentIdsList.value.includes(id)) {
-      console.log('删掉');
+    if (beforeCarCondimentIds.value.includes(id)) {
       beforeCarCondimentIds.value.splice(index, 1);
-      beforeCarCondimentIdsList.value = beforeCarCondimentIds.value.map(i => i.id)
-      console.log('#', beforeCarCondimentIds.value);
       condimentConfirm(dishValue.value);
     } else {
-      console.log('添加');
-      beforeCarCondimentIds.value.push(condiObj);
-      beforeCarCondimentIdsList.value = beforeCarCondimentIds.value.map(i => i.id)
-      console.log('#', beforeCarCondimentIds.value);
-      console.log('#', beforeCarCondimentIdsList.value);
+      beforeCarCondimentIds.value.push(id);
       condimentConfirm(dishValue.value);
     }
   }
-  console.log(beforeCarCondimentIds.value);
+
+  // console.log(beforeCarCondimentIds.value);
 };
-// 选择调味品量的多少
-const changelen = (item, type, currIndex) => {
-  // const id = item.id
-  console.log(beforeCarCondimentIds.value);
-  numAct.value = item.val
-  const index = beforeCarCondimentIds.value.findIndex((d) => d.id === curItem.value.id);
-  console.log(beforeCarCondimentIds.value[index]);
-  beforeCarCondimentIds.value[index].amount = numAct.value
-  console.log(beforeCarCondimentIds.value[index]);
-  // beforeCarCondimentIdsList.value = beforeCarCondimentIds.value.map(i=>i.id)
-  condimentConfirm(dishValue.value);
-}
+
 // 自定义价格弹窗
 // ref
 const priceDialogRef = ref();
-const curItem = ref({}) //当前选中的调味项
+
 // 选中的自定义调味品
 const chooseCustomCond = ref();
 // 已选择好的自定义调味品
@@ -399,30 +366,16 @@ const condimentResult = computed(() => {
 
 // 最终确认结果 by zizhen guo
 const condimentConfirm = (dishValue) => {
-  // console.log(dishValue);
   // addedToCart[routeParams.carIndex].dishesSpicesList = condimentResult.value;
-  // fix condiment disorder in the cart 
-  console.log(sureNormal.value);
-  sureNormal.value.reverse();
+    console.log(dishValue);
   // 处理调味品 至 自定义调味品
-
   const condiment_custom = sureNormal.value.map((item) => {
-    console.log(item);
-    beforeCarCondimentIds.value.forEach(o => {
-      if (item.id === o.id) {
-        item.amount = o.amount
-      }
-    })
-    const classItem = spicesCondimentList.value.find((d) => {
-      // console.log(d);
-      d.id == item.spicesCombineId
-    }) || {};
+    const classItem =
+      spicesCondimentList.value.find((d) => d.id == item.spicesCombineId) || {};
     return {
-      id: item.spicesCombineId,
-      name: `${item.name}/${item.amount ? '多' : '少'}`,
+      name: `${classItem.name}/${item.name}`,
       nameLanguage: `${classItem.nameLanguage}/${item.nameLanguage}`,
       price: item.price,
-      amount: item.amount
     };
   });
   addedToCart[dishValue].customDishesSpicesList = [
@@ -431,8 +384,8 @@ const condimentConfirm = (dishValue) => {
   ];
   // console.log(chooseCustomConds.value)
   // console.log(sureNormal.value)
-  console.log(condiment_custom)
-  console.log(addedToCart)
+  // console.log(condiment_custom)
+  // console.log(addedToCart)
   // keep current page by zizhen guo 
   //router.go(-1);
 };
@@ -511,12 +464,10 @@ onMounted(() => {
     }
   }
 }
-
 .condiment-container {
   height: 100%;
   flex-direction: column;
   align-items: end;
-
   .condiment-box {
     // display: grid;
     // grid-template-columns: 100px;
@@ -532,7 +483,6 @@ onMounted(() => {
         border-top: 1px solid #9e9e9e21;
         height: 100%;
         overflow: hidden;
-
         .title {
           font-size: 13px;
           height: 20px;
@@ -540,7 +490,6 @@ onMounted(() => {
           line-height: 30px;
         }
       }
-
       .condiment {
         @extend .condiment_;
         height: calc(100% - 300px);
@@ -549,7 +498,6 @@ onMounted(() => {
 
     .right-container {
       padding: 5px 10px;
-
       .join-container {
         border-radius: 10px;
         box-shadow: 0px 1px 5px 0px #9e9e9e4f;
@@ -605,32 +553,5 @@ onMounted(() => {
   background-color: #f9f9f9;
   border-radius: 10px;
   @extend .condiment_;
-}
-
-.flex {
-  display: flex;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.num-item {
-  // width: 100px;
-  padding: 5px 10px;
-  background-color: white;
-  height: auto;
-  font-size: 15px;
-  border-radius: 10px;
-  transition: 300ms;
-  min-width: 40px;
-  text-align: center;
-  margin-left: 15px;
-  margin-bottom: 15px;
-
-  &.active {
-    background-color: #05d69d;
-    color: white;
-  }
 }
 </style>
