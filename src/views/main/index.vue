@@ -23,7 +23,7 @@
         <div class="input-box">
           <el-form ref="numberFormRef" :model="numberFormData" :rules="numberFormRules">
             <el-form-item :prop="currNumberDialogInfo.chooseInputName">
-              <el-input class="big-keyboard" :type="currNumberDialogInfo.type == 'openCashbox'
+              <el-input class="big-keyboard" ref="numInputRef" :type="currNumberDialogInfo.type == 'openCashbox'
                   ? 'password'
                   : 'number'
                 " v-model="numberFormData[currNumberDialogInfo.chooseInputName]"></el-input>
@@ -97,7 +97,7 @@ import { useRouter } from "vue-router";
 import { storeage_service_name } from "@/utils/apiConfig";
 
 const router = useRouter();
-
+const numInputRef = ref(null)
 const { proxy } = getCurrentInstance();
 
 // 图片
@@ -286,12 +286,18 @@ const openNumberDialog = (item) => {
     }
   } else {
     // 打开钱箱
-    numberDialogRef.value.openDialog();
+    openNumDialog()
 
   }
   // console.log(params)
 };
-
+// 打开钱箱并聚焦
+const openNumDialog = async()=>{
+  await numberDialogRef.value.openDialog();
+  nextTick(()=>{
+    numInputRef.value.focus()
+  })
+}
 // 确认
 const numberDialogConfirm = async (call) => {
   const { type } = currNumberDialogInfo.value;

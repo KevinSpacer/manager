@@ -11,9 +11,9 @@
             </el-input>
           </el-form-item>
           <el-form-item :label="$LANG_TEXT('电话号码')" prop="contactWay">
-            <el-input v-model="customerForm.contactWay" oninput="value=value.length>10?value.splice(0,10)" maxlength="10"
-              @input="getInfoData" @click="openKeyboard('number', 'contactWay')" :placeholder="$LANG_TEXT('电话号码')"
-              show-word-limit>
+            <el-input ref="contactWayInputRef" v-model="customerForm.contactWay"
+              oninput="value=value.length>10?value.splice(0,10)" maxlength="10" @input="getInfoData"
+              @click="openKeyboard('number', 'contactWay')" :placeholder="$LANG_TEXT('电话号码')" show-word-limit>
             </el-input>
           </el-form-item>
           <el-form-item :label="$LANG_TEXT('地址')" prop="address">
@@ -59,6 +59,7 @@ const emits = defineEmits(["confirm"]);
 const confirmText = ref('确认')
 // 加载状态
 const showLoading = ref(false);
+const contactWayInputRef = ref(null)
 const { proxy } = getCurrentInstance();
 const props = defineProps({
   data: {
@@ -151,8 +152,8 @@ watch(() => customerForm.contactWay, (newVal, oldVal) => {
 })
 
 // 打开客户信息弹窗
-const openDialog = () => {
-  customerDialogRef.value.openDialog();
+const openDialog = async () => {
+  await customerDialogRef.value.openDialog();
   // 克隆表单数据防止修改原数据 Oneway 1.29
   let formObj = JSON.parse(JSON.stringify(props.data))
   // 数据回显  Oneway 1.29
@@ -160,6 +161,9 @@ const openDialog = () => {
   // nextTick(() => {
   //   customerFormRef.value.resetFields();
   // });
+  nextTick(() => {
+    contactWayInputRef.value.focus()
+  })
 };
 const closeDialog = () => {
   customerDialogRef.value.closeDialog();

@@ -39,8 +39,10 @@ module.exports = {
           sourceMap: false,
           parallel: true
         })
-      ]
-    }
+      ],
+    
+    },
+    // devtool:'source-map'
   },
   chainWebpack: config => {
     config.resolve.alias
