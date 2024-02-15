@@ -5,84 +5,50 @@
 				<!-- 菜品 -->
 				<div class="spec-list" v-if="goodsType == 'DISHES'">
 					<!-- 规格项 -->
-					<div
-						class="spce-item"
-						v-for="(item, index) in currDetail.dishesSpecificationList"
-						:key="'goods' + index"
-					>
+					<div class="spce-item" v-for="(item, index) in currDetail.dishesSpecificationList"
+						:key="'goods' + index">
 						<p class="item-title">
 							<span class="title">
-								<second-language
-									:firstText="item.name"
-									:secondText="item.nameLanguage"
-								></second-language>
+								<second-language :firstText="item.name" :secondText="item.nameLanguage"></second-language>
 							</span>
 						</p>
 
 						<!-- 规格值 -->
 						<div class="spec-child-list">
-							<div
-								class="child-list-item"
-								:class="{ active: chooseSpecIds[index].includes(d.id) }"
-								v-for="(d, i) in item.dishesSpecificationAttributeList"
-								:key="index + '-' + i"
-								@click="changeSpecIds(d.id, index)"
-							>
-								<second-language
-									:firstText="d.name"
-									:secondText="d.nameLanguage"
-								></second-language>
+							<div class="child-list-item" :class="{ active: chooseSpecIds[index].includes(d.id) }"
+								v-for="(d, i) in item.dishesSpecificationAttributeList" :key="index + '-' + i"
+								@click="changeSpecIds(d.id, index)">
+								<second-language :firstText="d.name" :secondText="d.nameLanguage"></second-language>
 							</div>
 						</div>
 					</div>
 
 					<!-- 调味品 -->
-					<div
-						class="spce-item"
-						v-for="(item, index) in currDetail.dishesSpicesList"
-						:key="'condiment' + index"
-					>
+					<div class="spce-item" v-for="(item, index) in currDetail.dishesSpicesList" :key="'condiment' + index">
 						<p class="item-title">
 							<span class="title">
-								<second-language
-									:firstText="item.name"
-									:secondText="item.nameLanguage"
-								></second-language>
+								<second-language :firstText="item.name" :secondText="item.nameLanguage"></second-language>
 							</span>
 						</p>
 
 						<!-- 调味品值 -->
 						<div class="spec-child-list">
-							<div
-								class="child-list-item"
-								:class="{ active: chooseCondmentIds[index].includes(d.id) }"
-								v-for="(d, i) in item.dishesSpicesAttributeList"
-								:key="'condiment' + index + '-' + i"
-								@click="changeCondIds(d.id, index)"
-							>
-								<second-language
-									:firstText="d.name"
-									:secondText="d.nameLanguage"
-								></second-language>
+							<div class="child-list-item" :class="{ active: chooseCondmentIds[index].includes(d.id) }"
+								v-for="(d, i) in item.dishesSpicesAttributeList" :key="'condiment' + index + '-' + i"
+								@click="changeCondIds(d.id, index)">
+								<second-language :firstText="d.name" :secondText="d.nameLanguage"></second-language>
 							</div>
 						</div>
 					</div>
 				</div>
-				
+
 				<!-- 套餐 -->
 				<div class="spec-list" v-else>
 					<!-- 规格项 -->
-					<div
-						class="spce-item"
-						v-for="(item, index) in currDetail.specificationList"
-						:key="'goods' + index"
-					>
+					<div class="spce-item" v-for="(item, index) in currDetail.specificationList" :key="'goods' + index">
 						<div class="item-title">
 							<p class="title">
-								<second-language
-									:firstText="item.name"
-									:secondText="item.nameLanguage"
-								></second-language>
+								<second-language :firstText="item.name" :secondText="item.nameLanguage"></second-language>
 							</p>
 							<p class="tips">
 								({{ $LANG_TEXT(`请选择`) }}
@@ -99,17 +65,10 @@
 
 						<!-- 规格值 -->
 						<div class="spec-child-list">
-							<div
-								class="child-list-item"
-								:class="{ active: chooseSpecIds[index].includes(d.id) }"
-								v-for="(d, i) in item.setMealSpecificationDishesList"
-								:key="index + '-' + i"
-								@click="changeSpecIds(d.id, index)"
-							>
-								<second-language
-									:firstText="d.name"
-									:secondText="d.nameLanguage"
-								></second-language>
+							<div class="child-list-item" :class="{ active: chooseSpecIds[index].includes(d.id) }"
+								v-for="(d, i) in item.setMealSpecificationDishesList" :key="index + '-' + i"
+								@click="changeSpecIds(d.id, index)">
+								<second-language :firstText="d.name" :secondText="d.nameLanguage"></second-language>
 							</div>
 						</div>
 					</div>
@@ -160,7 +119,7 @@ const props = defineProps({
 	//已加入购物车的skuId
 	goodsSkuId: {
 		type: [String, Number],
-		default:"",
+		default: "",
 	},
 });
 
@@ -255,8 +214,8 @@ const getCurrDetailId = async () => {
 		// 默认选中每一组的第一个
 		chooseSpecIds.value = list.length
 			? list.map((item) => [
-					(item.dishesSpecificationAttributeList[0] || {}).id,
-			  ])
+				(item.dishesSpecificationAttributeList[0] || {}).id,
+			])
 			: [[]];
 		// console.log('规格')
 		// console.log(list)
@@ -382,9 +341,18 @@ const chooseSpecTotal = computed(() => {
 });
 // 选中规格ID
 const changeSpecIds = (id, pIndex) => {
-	console.log(id,pIndex);
-	actionChooseIds(chooseSpecIds.value, id, pIndex);
-	submitJoinCar()
+	console.log(id);
+	console.log(chooseSpecIds.value);
+	if (id == chooseSpecIds.value[0][0]) {
+		submitJoinCar()
+	} else {
+		actionChooseIds(chooseSpecIds.value, id, pIndex);
+		submitJoinCar()
+	}
+
+
+
+
 };
 // 选中规格ID
 const changeCondIds = (id, pIndex) => {
@@ -409,7 +377,7 @@ const actionChooseIds = (cIds, id, pIndex) => {
 		if (!cIds[pIndex].includes(id)) {
 			cIds[pIndex].splice(0);
 			cIds[pIndex].push(id);
-		}else{
+		} else {
 			cIds[pIndex].splice(0);
 		}
 	} else {
@@ -533,11 +501,10 @@ const submitJoinCar = () => {
 	);
 
 	//本地使用 唯一标识
-	console.log("before make a new skuid, the original id is " +props.goodsSkuId);
+	console.log("before make a new skuid, the original id is " + props.goodsSkuId);
 	obj.skuId = props.goodsSkuId;
-	if(isEmpty.includes(props.goodsSkuId)){
-		obj.skuId = `${obj.goodsId}-${
-		dataIds.join("-") + "-" + condmentDataIds.join("-")}`
+	if (isEmpty.includes(props.goodsSkuId)) {
+		obj.skuId = `${obj.goodsId}-${dataIds.join("-") + "-" + condmentDataIds.join("-")}`
 	}
 	// 校验 提示语
 	const tips = currSpecList.value
@@ -581,6 +548,7 @@ onMounted(() => {
 	if (props.goodsId) {
 		getCurrDetailId();
 	}
+	console.log(chooseSpecIds.value);
 });
 
 defineExpose({
@@ -592,6 +560,7 @@ defineExpose({
 <style lang="scss" scoped>
 .dialog-join-car {
 	min-height: 200px;
+
 	.spec-list {
 		display: flex;
 		flex-direction: column;
@@ -599,6 +568,7 @@ defineExpose({
 
 		.spce-item {
 			color: black;
+
 			.item-title {
 				line-height: 50px;
 				display: flex;
@@ -610,6 +580,7 @@ defineExpose({
 					font-weight: bold;
 					font-size: 18px;
 				}
+
 				.tips {
 					font-size: 14px;
 					color: #c4c4c4;
@@ -623,9 +594,10 @@ defineExpose({
 				flex-wrap: wrap;
 				justify-content: flex-start;
 
-				.child-list-item + .child-list-item {
+				.child-list-item+.child-list-item {
 					margin-left: 15px;
 				}
+
 				.child-list-item {
 					font-size: 14px;
 					padding: 8px 16px;
@@ -638,6 +610,7 @@ defineExpose({
 					&:active {
 						opacity: 0.7;
 					}
+
 					&.active {
 						background-color: #05d69d;
 						border: 1px solid #05d69d;
@@ -652,6 +625,7 @@ defineExpose({
 		}
 	}
 }
+
 .dialog-btn {
 	display: flex;
 	flex-direction: row;

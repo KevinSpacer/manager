@@ -3,18 +3,13 @@
   <div class="condiment-container">
     <!-- 调味品组合 -->
     <div class="condiment-classify">
-      <tab-scroll
-        v-model="chooseCondimentClassify"
-        :options="{
-          keyName: 'name',
-          valueName: 'id',
-        }"
-        :optionsSecond="{
-          keyName: 'nameLanguage',
-          valueName: 'id',
-        }"
-        :data="spicesCondimentList"
-      ></tab-scroll>
+      <tab-scroll v-model="chooseCondimentClassify" :options="{
+        keyName: 'name',
+        valueName: 'id',
+      }" :optionsSecond="{
+  keyName: 'nameLanguage',
+  valueName: 'id',
+}" :data="spicesCondimentList"></tab-scroll>
     </div>
 
     <!-- 调味品内容 -->
@@ -22,42 +17,25 @@
       <div class="left-container">
         <!-- 标准调味品 -->
         <div class="normal-condiment condiment ml-scrollbar">
-          <div
-            class="condiment-item"
-            :class="{ active: beforeCarCondimentIds.includes(item.id) }"
-            @click="changeCondiment(item)"
-            v-for="(item, index) in normalCondimentData"
-            :key="'item' + index"
-          >
-            <second-language
-              :firstText="item.name"
-              :secondText="item.nameLanguage"
-            ></second-language>
+          <div class="condiment-item" :class="{ active: beforeCarCondimentIds.map(i => i.id).includes(item.id) }"
+            @click="changeCondiment(item)" v-for="(item, index) in normalCondimentData" :key="'item' + index">
+            <second-language :firstText="item.name" :secondText="item.nameLanguage"></second-language>
           </div>
         </div>
 
         <!-- 自定义调味品 -->
       </div>
-        <!-- 常规 -->
-        <!-- 自定义 -->
+      <!-- 常规 -->
+      <!-- 自定义 -->
     </div>
   </div>
 
   <!-- 自定义价格弹窗 -->
-  <ml-dialog
-    :showBtn="false"
-    ref="priceDialogRef"
-    class="priceDialog"
-    :title="$LANG_TEXT('自定义价格')"
-  >
+  <ml-dialog :showBtn="false" ref="priceDialogRef" class="priceDialog" :title="$LANG_TEXT('自定义价格')">
     <template #content>
       <div class="condiment-price ml-scrollbar">
-        <div
-          class="condiment-item"
-          v-for="(item, index) in customPriceData"
-          :key="'item-price' + index"
-          @click="changeCustomPrice(item)"
-        >
+        <div class="condiment-item" v-for="(item, index) in customPriceData" :key="'item-price' + index"
+          @click="changeCustomPrice(item)">
           ${{ item.price }}
         </div>
 
@@ -69,34 +47,18 @@
   </ml-dialog>
 
   <!-- 数字键盘弹窗 -->
-  <ml-dialog
-    width="fit-content"
-    :showBtn="false"
-    ref="numberDialogRef"
-    class="numberDialog"
-    :title="$LANG_TEXT('自定义价格')"
-  >
+  <ml-dialog width="fit-content" :showBtn="false" ref="numberDialogRef" class="numberDialog" :title="$LANG_TEXT('自定义价格')">
     <template #content>
       <div class="number-dialog-box">
         <div class="input-box">
-          <el-form
-            ref="numberFormRef"
-            :model="numberFormData"
-            :rules="numberFormRules"
-          >
+          <el-form ref="numberFormRef" :model="numberFormData" :rules="numberFormRules">
             <el-form-item prop="price">
-              <el-input
-                class="big-keyboard"
-                v-model="numberFormData.price"
-              ></el-input>
+              <el-input class="big-keyboard" v-model="numberFormData.price"></el-input>
             </el-form-item>
           </el-form>
         </div>condiment
         <div class="number-keyboard">
-          <keyboard-number
-            @confirm="numberDialogConfirm"
-            v-model="numberFormData.price"
-          >
+          <keyboard-number @confirm="numberDialogConfirm" v-model="numberFormData.price">
           </keyboard-number>
           <!-- <soft-keyboard-number
 						
@@ -121,6 +83,15 @@ import {
 import { useRoute, useRouter } from "vue-router";
 import tabScroll from "@/components/tab-scroll";
 import { testPositiveNumberFlot } from "@/utils/regExp";
+// 双向绑定实现调味品相互保持一致 2.15 oneway
+const props = defineProps(['modelValue'])
+const emits = defineEmits(['update:modelValue'])
+watch(() => props.modelValue, (nval) => {
+  beforeCarCondimentIds.value = nval
+
+})
+// 双向绑定实现调味品相互保持一致 2.15 oneway
+
 const route = useRoute();
 const router = useRouter();
 const routeParams = route.query;
@@ -161,7 +132,7 @@ const getCondiemntClassify = async () => {
     const result = res.result;
     spicesCondimentList.value = result;
     chooseCondimentClassify.value = (result[0] || {}).id;
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 全标准调味品数据对象
@@ -188,7 +159,7 @@ const getCondimentIdDataList = async () => {
     normalCondimentData.value = result;
 
     normalAllCondimentObj.value[spicesCombineId] = result;
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 自定义调味品
@@ -198,7 +169,7 @@ const getCustomCondimentData = async () => {
     const res = await proxy.$storeDispatch("fetchGetCustomSpicesList");
     const result = res.result;
     customCondimentData.value = result;
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 自定义价格
@@ -208,7 +179,7 @@ const getCustomPriceData = async () => {
     const res = await proxy.$storeDispatch("fetchGetCustomPriceList");
     const result = res.result;
     customPriceData.value = result;
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 要加入购物车的调味品
@@ -226,21 +197,16 @@ const beforeCarCondiment = computed(() => {
 // 已选择的常规
 const sureNormal = computed(() =>
   normalAllCondimentList.value.filter((item) =>
-    beforeCarCondimentIds.value.includes(item.id)
+    beforeCarCondimentIds.value.map(i => i.id).includes(item.id)
   )
 );
 
 // 选择加入购物车的调味品
 const changeCondiment = (item, type, currIndex) => {
+  console.log(item);
   const id = item.id;
-  const index = beforeCarCondimentIds.value.findIndex((d) => d == id);
-
-  //console.log(type)
-  // console.log(currIndex)
-  // console.log(index)
-  // console.log(beforeCarCondimentIds.value.includes(id))
-  // console.log(beforeCarCondimentIds.value)
-  // console.log(chooseCustomConds.value)
+  const index = beforeCarCondimentIds.value.findIndex((d) => d.id == id);
+  console.log(beforeCarCondimentIds.value);
   // 静态删除调味品
   if (type == "delete") {
     // 未在动态调味品中
@@ -253,16 +219,15 @@ const changeCondiment = (item, type, currIndex) => {
     }
   } else {
     // 已加入ID
-    if (beforeCarCondimentIds.value.includes(id)) {
+    if (beforeCarCondimentIds.value.map(i => i.id).includes(id)) {
       beforeCarCondimentIds.value.splice(index, 1);
       condimentConfirm(dishValue.value);
     } else {
-      beforeCarCondimentIds.value.push(id);
+      beforeCarCondimentIds.value.push(item);
       condimentConfirm(dishValue.value);
     }
   }
 
-  // console.log(beforeCarCondimentIds.value);
 };
 
 // 自定义价格弹窗
@@ -367,13 +332,15 @@ const condimentResult = computed(() => {
 // 最终确认结果 by zizhen guo
 const condimentConfirm = (dishValue) => {
   // addedToCart[routeParams.carIndex].dishesSpicesList = condimentResult.value;
-    console.log(dishValue);
+  console.log(dishValue);
   // 处理调味品 至 自定义调味品
   const condiment_custom = sureNormal.value.map((item) => {
+    console.log(item);
     const classItem =
       spicesCondimentList.value.find((d) => d.id == item.spicesCombineId) || {};
     return {
-      name: `${classItem.name}/${item.name}`,
+      id: item.id,
+      name: `${classItem.name}${item.name}`, //对调味品显示做处理 删掉/斜线 2.15 Oneway
       nameLanguage: `${classItem.nameLanguage}/${item.nameLanguage}`,
       price: item.price,
     };
@@ -382,12 +349,8 @@ const condimentConfirm = (dishValue) => {
     ...condiment_custom,
     ...chooseCustomConds.value,
   ];
-  // console.log(chooseCustomConds.value)
-  // console.log(sureNormal.value)
-  // console.log(condiment_custom)
-  // console.log(addedToCart)
-  // keep current page by zizhen guo 
-  //router.go(-1);
+  // 双向绑定实现调味品相互保持一致 通知更新 2.15 oneway
+  emits('update:modelValue', beforeCarCondimentIds.value)
 };
 
 // 回显调味品数据 废弃
@@ -464,10 +427,12 @@ onMounted(() => {
     }
   }
 }
+
 .condiment-container {
   height: 100%;
   flex-direction: column;
   align-items: end;
+
   .condiment-box {
     // display: grid;
     // grid-template-columns: 100px;
@@ -483,6 +448,7 @@ onMounted(() => {
         border-top: 1px solid #9e9e9e21;
         height: 100%;
         overflow: hidden;
+
         .title {
           font-size: 13px;
           height: 20px;
@@ -490,6 +456,7 @@ onMounted(() => {
           line-height: 30px;
         }
       }
+
       .condiment {
         @extend .condiment_;
         height: calc(100% - 300px);
@@ -498,6 +465,7 @@ onMounted(() => {
 
     .right-container {
       padding: 5px 10px;
+
       .join-container {
         border-radius: 10px;
         box-shadow: 0px 1px 5px 0px #9e9e9e4f;

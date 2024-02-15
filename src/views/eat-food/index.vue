@@ -62,7 +62,8 @@
                   <!-- 菜品、套餐 -->
                   <div class="first-item">
                     <div class="product-name" @click.stop="changeCarListItem(index)">
-                      <second-language class="oneLineOver" :firstText="item.name"
+                      <second-language class="oneLineOver"
+                        :firstText="item.name + '(' + item.dishesSpecificationList[0].dishesSpecificationAttributeList[0].name + ')'"
                         :secondText="item.nameLanguage || item.name"></second-language>
                     </div>
                     <div class="product-status" @click.stop="changeCarListItem(index)">
@@ -79,7 +80,8 @@
                       <span v-else>{{ item.goodsQuantity }}</span>
                     </div>
                     <div class="product-price" @click.stop="changeCarListItem(index)">
-                      ${{ (item.price * item.goodsQuantity || 0).toFixed(2) }}
+                      <!-- ${{ (item.originPrice * item.goodsQuantity || 0).toFixed(2) }} -->
+                      ${{ (item.originPrice || 0).toFixed(2) }}
 
                       <!-- 折扣 -->
                       <span>
@@ -109,7 +111,7 @@
 
                   <!-- 底部 规格  -->
                   <!-- @handClick="changeCarListItem(index)" -->
-                  <list-item :goodsDetail="item" @deleteCondiments="deleteCondiment($event, index)"
+                  <list-item :goodsDetail="item" v-model="condiments" @deleteCondiments="deleteCondiment($event, index)"
                     @changeSpec="changeSpec($event)"></list-item>
                 </div>
               </div>
@@ -450,7 +452,7 @@
           </div>
         </div>
         <div>
-          <condiment v-if="chooseCarGoodsIndex.value === 0 || chooseCarGoodsIndex !== ''" :delItem="curDelItem" />
+          <condiment v-if="chooseCarGoodsIndex.value === 0 || chooseCarGoodsIndex !== ''" v-model="condiments" />
         </div>
         <!--菜谱列表 2 row: deleted below part becasue only keep the one prodcut component all information is laoded by below component! by zizhen guo -->
       </div>
@@ -737,7 +739,9 @@
         </el-button>
         <!-- 取消菜品  -->
         <el-button :disabled="isInPay" v-if="proxy.$isUseAuth('自定义菜品')" @click.stop="deleteDishesReason">
-          <el-icon><Delete /></el-icon>
+          <el-icon>
+            <Delete />
+          </el-icon>
           {{ $LANG_TEXT("取消菜品") }}
         </el-button>
       </div>
@@ -778,7 +782,7 @@ import payment from "./direct-payment.vue"
 import { SelectProps } from "element-plus/es/components/select-v2/src/defaults";
 
 const { proxy } = getCurrentInstance();
-
+const condiments = ref([]) //调味品共享数据
 const route = useRoute();
 console.log(route);
 const routeQuery = reactive(route.query || {});
@@ -1285,9 +1289,11 @@ const deleteDishes = async () => {
 const deleteCondiment = (value, index) => {
   console.log(value);
   console.log(index);
+  console.log(addedToCart.value);
   let specificationExist = value.item.dishesSpecificationAttributeList
   let spiceExist = value.item.dishesSpicesAttributeList
   let condiIndex = value.index;
+  console.log('选中index', condiIndex);
   console.log("list item  is " + specificationExist);
   console.log("list item  is " + spiceExist);
   console.log("list item  is " + condiIndex);
@@ -1309,6 +1315,11 @@ const deleteCondiment = (value, index) => {
     delete addedToCart.value[index].customDishesSpicesList[indexInSicesList]
     addedToCart.value[index].customDishesSpicesList = addedToCart.value[index].customDishesSpicesList.filter(item => item);
   }
+  // console.log(addedToCart.value[index].customDishesSpicesList);
+  // addedToCart.value[index].customDishesSpicesList.splice(condiIndex,1)
+  // console.log(addedToCart.value[index]);
+  // console.log(addedToCart.value);
+
 };
 
 //修改之前在弹窗中选中的内容
@@ -1561,7 +1572,8 @@ const updateOrderDishes = async (params) => {
 const changeCarListItem = (index) => {
 
   console.log("product name is selected with index is " + index)
-
+  console.log(addedToCart.value[index]);
+  condiments.value = addedToCart.value[index].customDishesSpicesList
   if (chooseCarGoodsIndex.value === "") {
     chooseCarGoodsIndex.value = index;
     return;
@@ -2023,13 +2035,26 @@ const openPeopelDialog = (type) => {
       peopelValue.value = routeParams.peopleQuantity ? routeParams.peopleQuantity : '';
     }
     callerKeyboard.value = 'peopel'
-    peopelDialogRef.value.openDialog();
-    nextTick(() => {
-      peopelInputRef.value.focus()
-    })
+    peopelInputfocus()
+
   }
 };
 
+// 打开人数弹窗并自动聚焦 2.15 oneway
+const peopelInputfocus = async () => {
+  await peopelDialogRef.value.openDialog();
+  nextTick(() => {
+    peopelInputRef.value.focus()
+  })
+}
+
+// 打开座位弹窗并自动聚焦 2.15 oneway
+const seatInputfocus = async () => {
+  await seatDialogRef.value.openDialog();
+  nextTick(() => {
+    seatInputRef.value.focus()
+  })
+}
 // 确认
 const peopelDialogConfirm = () => {
   // 修改人数
@@ -2054,15 +2079,13 @@ const seatDialogRef = ref();
 const callerKeyboard = ref('')
 // 座位数据
 const seatValue = ref();
-// 打开弹窗
+// 打开座位弹窗
 const openSeatDialog = () => {
   callerKeyboard.value = 'seat'
   if (isActionOrder.value) {
     seatValue.value = routeParams.location;
-    seatDialogRef.value.openDialog();
-    nextTick(() => {
-      seatInputRef.value.focus()
-    })
+    seatInputfocus()
+
   }
 };
 // 确认

@@ -193,6 +193,21 @@ watch(
   }
 );
 
+watch(() => playParams.payAmount, (nval) => {
+  console.log(nval)
+  console.log(props.currAcount);
+  if (nval > 0) {
+    payReceive.value = (playParams.payAmount - originalPrice.value.originPrice).toFixed(2)
+    if (payReceive.value < 0) {
+      payReceive.value = 0
+      proxy.$message({
+        message: proxy.$LANG_TEXT("当前金额不够找零"),
+      });
+    }
+  }
+
+})
+
 // 支付类型列表
 const playTypeList = ref([]);
 // 查询支付类型
