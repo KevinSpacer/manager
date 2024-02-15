@@ -88,6 +88,7 @@ const props = defineProps(['modelValue'])
 const emits = defineEmits(['update:modelValue'])
 watch(() => props.modelValue, (nval) => {
   beforeCarCondimentIds.value = nval
+  console.log(beforeCarCondimentIds.value);
 
 })
 // 双向绑定实现调味品相互保持一致 2.15 oneway

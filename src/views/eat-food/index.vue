@@ -1570,10 +1570,7 @@ const updateOrderDishes = async (params) => {
 };
 
 const changeCarListItem = (index) => {
-
-  console.log("product name is selected with index is " + index)
-  console.log(addedToCart.value[index]);
-  condiments.value = addedToCart.value[index].customDishesSpicesList
+  condiments.value = addedToCart.value[index] && addedToCart.value[index].customDishesSpicesList || []
   if (chooseCarGoodsIndex.value === "") {
     chooseCarGoodsIndex.value = index;
     return;
@@ -3240,7 +3237,7 @@ $grayColor: #fdfdfd;
                 display: grid;
                 flex-direction: row;
                 flex-wrap: nowrap;
-                grid-template-columns: 1fr 80px 120px 150px;
+                grid-template-columns: 1fr 40px 120px 150px;
                 justify-items: center;
                 align-items: center;
               }
