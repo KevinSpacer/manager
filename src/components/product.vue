@@ -3,12 +3,9 @@
   <!-- 更新菜品 -->
   <!-- 点菜 -->
   <div class="product-card" :class="`${productType}`" @click="clickAllDishes">
-      <!-- 信息 -->
-      <second-language
-        :firstText="detail.name"
-        :secondText="detail.nameLanguage"
-      ></second-language>
-        <!-- bottom zone displayed and deleted by zizhen guo -->
+    <!-- 信息 -->
+    <second-language :firstText="detail.name" :secondText="detail.nameLanguage"></second-language>
+    <!-- bottom zone displayed and deleted by zizhen guo -->
   </div>
 </template>
 
@@ -31,8 +28,8 @@ const addedToCart = computed(() => eatFoodModule.addedToCart);
 const emits = defineEmits(["changeCount", "changeSpec", "pushNew"]);
 // create new click method by zizhen guo 11/07/2023
 const submitJoinCar = () => {
-  
-  const obj = props.detail; 
+
+  const obj = props.detail;
   console.log(obj);
   emits("joinCar", obj);
 }
@@ -300,6 +297,7 @@ const clickAllDishes = () => {
   // flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
+
   // 更新菜品
   &.update {
     .product-box {
@@ -324,15 +322,19 @@ const clickAllDishes = () => {
           left: 0px;
           border-bottom-right-radius: 20px;
           padding-right: 15px;
+
           &.btn-on {
             background-color: $putOn;
           }
+
           &.btn-off {
             background-color: $putOff;
           }
+
           &.sell-out {
             background-color: $sellOut;
           }
+
           &.hot-sale {
             background-color: $hotSale;
           }
@@ -354,12 +356,14 @@ const clickAllDishes = () => {
           flex-direction: column;
           flex-wrap: nowrap;
           justify-content: flex-start;
+
           .price {
             color: #ff4848;
             font-size: 18px;
             line-height: 40px;
           }
         }
+
         .bottom {
           display: flex;
           flex-direction: row;
@@ -380,6 +384,7 @@ const clickAllDishes = () => {
             cursor: pointer;
             transition: 300ms;
             overflow: hidden;
+
             &:active {
               opacity: 0.8;
             }
@@ -389,9 +394,11 @@ const clickAllDishes = () => {
             .btn-on {
               background-color: $putOn;
             }
+
             .btn-off {
               background-color: $putOff;
             }
+
             .sell-out {
               background-color: $sellOut;
             }
@@ -401,6 +408,7 @@ const clickAllDishes = () => {
             &.YES {
               background-color: $hotSale;
             }
+
             &.NO {
               background-color: $sellOut;
             }
@@ -418,6 +426,7 @@ const clickAllDishes = () => {
         border-radius: 10px;
         overflow: hidden;
         position: relative;
+
         // 顶部标签
         .status-bar {
           position: absolute;
@@ -429,20 +438,25 @@ const clickAllDishes = () => {
           left: 0px;
           border-bottom-right-radius: 20px;
           padding-right: 15px;
+
           &.btn-on {
             background-color: $putOn;
           }
+
           &.btn-off {
             background-color: $putOff;
           }
+
           &.sell-out {
             background-color: $sellOut;
           }
+
           &.hot-sale {
             background-color: $hotSale;
           }
         }
       }
+
       .title {
         // change font colour and position by zizhen guo
         font-size: 25px;
@@ -453,6 +467,7 @@ const clickAllDishes = () => {
         text-align: center;
         line-height: 40px;
       }
+
       .bottom {
         display: flex;
         flex-direction: row;
@@ -464,6 +479,7 @@ const clickAllDishes = () => {
           color: #ff4848;
           font-size: 18px;
         }
+
         .tool {
           .change-spec {
             padding: 5px 15px;
@@ -490,5 +506,4 @@ const clickAllDishes = () => {
       }
     }
   }
-}
-</style>
+}</style>

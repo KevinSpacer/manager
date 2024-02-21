@@ -6,20 +6,14 @@
     <div class="box-header">
       <!-- logo -->
       <div class="logo" v-if="showLogo">
-        <img
-          crossorigin="anonymous"
-          :src="$previewFileUrl + roomDetail.logo"
-          alt=""
-        />
+        <img crossorigin="anonymous" :src="$previewFileUrl + roomDetail.logo" alt="" />
       </div>
       <!-- 名称 -->
       <div class="restaurant-name">
-        <second-language
-          :firstText="roomDetail.name"
-          :secondText="roomDetail.nameLanguage || roomDetail.name"
-        ></second-language>
-        <P class="ticket-address"  :firstText="roomDetail.name" v-if="showAddress">{{roomDetail.address}}</P>
-        <p class="tips-line" v-if="showContact"> TEL: {{roomDetail.contactWay}}</p>
+        <second-language :firstText="roomDetail.name"
+          :secondText="roomDetail.nameLanguage || roomDetail.name"></second-language>
+        <P class="ticket-address" :firstText="roomDetail.name" v-if="showAddress">{{ roomDetail.address }}</P>
+        <p class="tips-line" v-if="showContact"> TEL: {{ roomDetail.contactWay }}</p>
         <span class="day-number">#{{ orderDetail.daySerialNo }}</span>
       </div>
       <!-- 信息 -->
@@ -32,7 +26,7 @@
         <p v-else>
           <!-- <span>{{ $LANG_TEXT("客户") }}：</span> -->
           <span>{{ $LANG_TEXT("Customer") }}：</span>
-          <span>{{ orderDetail.userName}}</span>
+          <span>{{ orderDetail.userName }}</span>
         </p>
         <p>
           {{
@@ -64,52 +58,33 @@
           <p style="font-size: 26px;">{{ $LANG_TEXT("小计") }}</p> -->
         </div>
         <div class="list-content">
-          <div
-            class="content-item"
-            v-for="(item, index) in printGoods"
-            :key="'goods' + index"
-          >
+          <div class="content-item" v-for="(item, index) in printGoods" :key="'goods' + index">
             <div class="dishe">
               <p class="name">
-      <!-- select Language to display kitchen alwasys Chinese -->
-                <second-language
-                  :firstText="item.name"
-                  :secondText="item.name || item.name"
-                  v-if="showEnCn==0"
-                ></second-language>
-                <second-language
-                  :firstText="item.nameLanguage"
-                  :secondText="item.nameLanguage || item.nameLanguage"
-                  v-if="showEnCn==1 || showEnCn==2"
-                ></second-language>
+                <!-- select Language to display kitchen alwasys Chinese -->
+                <second-language :firstText="item.name" :secondText="item.name || item.name" :showCancle="showCancle"
+                  v-if="showEnCn == 0"></second-language>
+                <second-language :firstText="item.nameLanguage" :secondText="item.nameLanguage || item.nameLanguage"
+                  v-if="showEnCn == 1 || showEnCn == 2"></second-language>
               </p>
               <p style="text-align: left;">{{ item.goodsQuantity }}</p>
               <p class="price" style="text-align: left;" v-if="showPrice">
-                {{ item.price }}
+                {{ resultPrice.orderMoney.toFixed(2) - resultPrice.taxRateMoney.toFixed(2) }}
                 <!-- 折扣 -->
                 <span v-if="item.dishesDiscount || item.dishesDiscount != 0">
-                  <i
-                    class="iconfont icon-discount"
-                    v-if="item.isDiscount == 'YES'"
-                  ></i>
+                  <i class="iconfont icon-discount" v-if="item.isDiscount == 'YES'"></i>
                   <!-- 百分比 -->
-                  <span
-                    v-if="
-                      item.dishesDiscountType == 'PERCENT' &&
-                      Number(item.dishesDiscount) &&
-                      item.dishesDiscount != 100
-                    "
-                  >
+                  <span v-if="item.dishesDiscountType == 'PERCENT' &&
+                    Number(item.dishesDiscount) &&
+                    item.dishesDiscount != 100
+                    ">
                     ({{ item.discountPrice }})
                     <!-- (-{{ item.dishesDiscount }}%) -->
                   </span>
                   <!-- 定额 -->
-                  <span
-                    v-if="
-                      item.dishesDiscountType == 'QUOTA' &&
-                      Number(item.dishesDiscount)
-                    "
-                  >
+                  <span v-if="item.dishesDiscountType == 'QUOTA' &&
+                    Number(item.dishesDiscount)
+                    ">
                     ({{ item.discountPrice }})
                     <!-- (-${{ item.dishesDiscount }}) -->
                   </span>
@@ -118,30 +93,23 @@
             </div>
             <!-- 规格 -->
             <list-item-in-ticket :showUnit="false" :goodsDetail="item"></list-item-in-ticket>
-            <p v-if ="showEnCn==2">
-              <second-language
-                  :firstText="item.name"
-                  :secondText="item.name || item.name"
-                ></second-language>
+            <p v-if="showEnCn == 2">
+              <second-language :firstText="item.name" :secondText="item.name || item.name"></second-language>
             </p>
           </div>
         </div>
       </div>
       <div class="info">
         <p v-if="orderDetail.remark">
-          <span
-            >{{ isPrintOrder ? $LANG_TEXT("Order Remarks") : $LANG_TEXT("Remarks") }}:
-            {{ orderDetail.remark }}</span
-          >
+          <span>{{ isPrintOrder ? $LANG_TEXT("Order Remarks") : $LANG_TEXT("Remarks") }}:
+            {{ orderDetail.remark }}</span>
         </p>
         <p v-if="orderDetail.serveDishesWay">
-          <span
-            >{{
-              isPrintOrder
-                ? $LANG_TEXT("Serving Method")
-                : $LANG_TEXT("Serving Method")
-            }}: {{ $LANG_TEXT(orderDetail.serveDishesWay) }}</span
-          >
+          <span>{{
+            isPrintOrder
+            ? $LANG_TEXT("Serving Method")
+            : $LANG_TEXT("Serving Method")
+          }}: {{ $LANG_TEXT(orderDetail.serveDishesWay) }}</span>
         </p>
         <!-- <p>
           <span>{{ $LANG_TEXT("服务员") }}: {{ orderDetail.waiterName }}</span>
@@ -155,7 +123,7 @@
       <p class="info-line allCount">
         <span>{{ $LANG_TEXT("Total") }}</span>
         <span>{{ printGoods.length }}</span>
-        <span>{{ resultPrice.orderMoney.toFixed(2) -resultPrice.taxRateMoney.toFixed(2) }}</span>
+        <span>{{ resultPrice.orderMoney.toFixed(2) - resultPrice.taxRateMoney.toFixed(2) }}</span>
       </p>
       <p class="info-line">
         <!-- <span>{{ $LANG_TEXT("优惠金额") }}</span> -->
@@ -172,10 +140,7 @@
         <span>{{ $LANG_TEXT("MaLing Amount") }}</span>
         <span>{{ resultPrice.maLingMoney.toFixed(2) }}</span>
       </p>
-      <p
-        class="info-line"
-        v-if="resultPrice.cashDiscountMoney || resultPrice.orderDiscount"
-      >
+      <p class="info-line" v-if="resultPrice.cashDiscountMoney || resultPrice.orderDiscount">
         <span>{{ $LANG_TEXT("Discount") }}</span>
         <span v-if="resultPrice.cashDiscountMoney">
           {{ resultPrice.cashDiscountMoney.toFixed(2) }}
@@ -194,7 +159,7 @@
       </p>
 
       <p class="info-line" v-if="resultPrice.taxRate">
-        <span>{{ $LANG_TEXT("Tax Rate")}}({{resultPrice.taxRate}}%)</span>
+        <span>{{ $LANG_TEXT("Tax Rate") }}({{ resultPrice.taxRate }}%)</span>
         <span> {{ resultPrice.taxRateMoney.toFixed(2) }} </span>
       </p>
       <p class="info-line" v-if="resultPrice.isFreeOrder !== 'NO'">
@@ -221,17 +186,11 @@
         <span></span>
       </p>
       <div class="pay-list">
-        <div
-          class="info-line"
-          v-for="(item, index) in payOrderList"
-          :key="'pay' + index"
-        >
+        <div class="info-line" v-for="(item, index) in payOrderList" :key="'pay' + index">
           <p>
             <span class="name" v-if="item.paymentMethodName">
-              <second-language
-                :firstText="item.paymentMethodNameLanguage"
-                :secondText="item.paymentMethodNameLanguage"
-              ></second-language>
+              <second-language :firstText="item.paymentMethodNameLanguage"
+                :secondText="item.paymentMethodNameLanguage"></second-language>
             </span>
             <span class="name" v-else>
               {{ $LANG_TEXT("Unpayment") }}</span>
@@ -244,17 +203,11 @@
         <span></span>
       </p>
       <div class="pay-list">
-        <div
-          class="info-line"
-          v-for="(item, index) in tipData"
-          :key="'pay' + index"
-        >
+        <div class="info-line" v-for="(item, index) in tipData" :key="'pay' + index">
           <p>
             <span class="name" v-if="item.paymentMethodName">
-              <second-language
-                :firstText="item.paymentMethodName"
-                :secondText="item.paymentMethodNameLanguage"
-              ></second-language>
+              <second-language :firstText="item.paymentMethodName"
+                :secondText="item.paymentMethodNameLanguage"></second-language>
             </span>
             <span class="name" v-else>
               {{ $LANG_TEXT("Unpayment") }}</span>
@@ -366,33 +319,39 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showCancle: {
+    type: Boolean,
+    default: false,
+  },
   // 是否是打印订单
   isPrintOrder: {
     type: Boolean,
     default: false,
   },
   // 关闭价格
-  showAddress:{
+  showAddress: {
     type: Boolean,
     default: true,
   },
   // 关闭电话
-    showContact:{
+  showContact: {
     type: Boolean,
     default: true,
   },
   // 关闭双语显示
-  showEnCn:{
+  showEnCn: {
     type: Number,
     default: false,
   },
 });
 
 const printGoods = ref(props.goodsList);
+console.log(printGoods.value);
 watch(
   () => props.goodsList.length,
   (nVal) => {
     printGoods.value = props.goodsList;
+    console.log(printGoods.value);
   }
 );
 
@@ -439,7 +398,7 @@ const getOrderAAPayDetail = async () => {
     const res = await proxy.$storeDispatch("fetchGetOrderPayDetailList", id);
     const result = res.result;
     payOrderList.value = result;
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 查询小费列表
@@ -469,6 +428,7 @@ onMounted(() => {
   //expand print area to deeper bottom zizhen
   padding-bottom: 100px;
   letter-spacing: 2px;
+
   .dashed-top {
     border-top: 1px dashed #909399;
     margin-top: 10px;
@@ -479,10 +439,12 @@ onMounted(() => {
     .logo {
       text-align: center;
       margin-top: 10px;
+
       img {
         height: 80px;
       }
     }
+
     .restaurant-name {
       position: relative;
       text-align: center;
@@ -491,8 +453,9 @@ onMounted(() => {
       font-size: 40px;
       //font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 15px 0;
+
       //小票地址样式
-      .ticket-address{
+      .ticket-address {
         font-size: 20px;
         margin-top: 20px;
         margin-bottom: 10px;
@@ -500,6 +463,7 @@ onMounted(() => {
         margin-left: 110px;
         line-height: 20px;
       }
+
       .day-number {
         position: absolute;
         font-size: 25px;
@@ -509,6 +473,7 @@ onMounted(() => {
         top: 18px;
       }
     }
+
     .info {
       display: flex;
       flex-direction: row;
@@ -530,6 +495,7 @@ onMounted(() => {
   // 菜品
   .dishes {
     .dishes-list {
+
       .list-header,
       .dishe {
         display: grid;
@@ -538,21 +504,25 @@ onMounted(() => {
         .price {
           display: grid;
           grid-template-columns: 1fr auto;
+
           .icon-discount {
             font-size: 16px;
           }
-          > span {
+
+          >span {
             display: flex;
             flex-direction: row;
             align-items: center;
           }
         }
       }
+
       .list-content {
         .content-item {
           margin-top: 10px;
           // dish name style by zizhen guo
           font-size: 38px;
+
           .dishe {
             display: grid;
             grid-template-columns: 1fr 80px 130px;
@@ -562,9 +532,10 @@ onMounted(() => {
       }
     }
 
-    > .info {
+    >.info {
       margin-top: 15px;
-      > p {
+
+      >p {
         margin: 5px 0;
       }
     }
@@ -578,17 +549,18 @@ onMounted(() => {
     //change price info area style by zizhen guo
     font-size: 18px;
   }
+
   .price-info {
     .info-line {
       &.allCount {
         grid-template-columns: 1fr 80px 130px;
       }
     }
+
     .pay-list {
       margin-left: 15px;
 
-      .info-lin {
-      }
+      .info-lin {}
     }
   }
 
@@ -597,10 +569,12 @@ onMounted(() => {
     font-size: 13px;
     padding: 10px;
     box-sizing: border-box;
-  //订单時間和編號字體大小和加粗
+    //订单時間和編號字體大小和加粗
     font-size: 20px;
+
     .line {
       margin: 2px 0;
+
       &.bold {
         font-weight: bold;
       }
@@ -614,6 +588,7 @@ onMounted(() => {
     font-size: 20px;
     margin-top: 1px;
     margin-bottom: 10px;
+
     p {
       line-height: 40px;
     }
@@ -625,11 +600,14 @@ onMounted(() => {
 .ticket-box {
   .list-box {
     font-size: 16px;
+
     .list-box-item {
       display: grid;
       grid-template-columns: 1fr 0 80px 130px !important;
+
       .item {
         text-align: left;
+
         &.number {
           &::before {
             content: "1";

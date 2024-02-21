@@ -1267,7 +1267,7 @@ const cancelDishes = async (ids) => {
     ids,
   });
 };
-// 删除菜品原因
+// 删除菜品原因 取消菜品Oneway
 const deleteDishesReason = async () => {
   openToolDialog("cancelingDish")
 };
@@ -1619,7 +1619,7 @@ const toolDialogRef = ref();
 // 打开多功能弹窗
 const openToolDialog = (type) => {
   toolDialogType.value = type;
-
+  console.log('打开多功能', toolDialogType.value);
   // 合单赋值当前订单号
   if (type == "consolidated") {
     toolForm.consolidated.mainOrder = routeParams.orderId;
@@ -1732,6 +1732,7 @@ const notCountPrice = computed(() => {
 
 // 确认
 const toolDialogConfirm = async (call) => {
+  console.log(toolDialogType.value);
   switch (toolDialogType.value) {
     case "remark":
       const index = chooseCarGoodsIndex.value;
@@ -1852,7 +1853,8 @@ const toolDialogConfirm = async (call) => {
       break;
     case "cancelingOrder":
       // 取消订单
-      // console.log(toolForm.cancelingOrder)
+      console.log('取消订单');
+      console.log(toolForm.cancelingOrder)
       cancelOrderApi({
         canceledReason: toolForm.cancelingOrder,
       });
@@ -1874,9 +1876,11 @@ const toolDialogConfirm = async (call) => {
       break;
     //删除一个菜品
     case "cancelingDish":
+      console.log('取消订单');
       deleteDishes()
       closeToolDialog(call);
       otherDialogRef.value.closeDialog();
+      printJump()
       break;
   }
 };
@@ -2827,7 +2831,7 @@ const customerConfirm = async (result, call) => {
 // 其他弹窗
 // ref
 const otherDialogRef = ref();
-// 打开弹窗
+// 打开弹窗 其他
 const openOtherDialog = () => {
   otherDialogRef.value.openDialog();
 };

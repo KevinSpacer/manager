@@ -114,7 +114,8 @@
         <!-- 打印菜品 -->
         <div class="all-down" v-if="printTypeVal == 1">
           <div id="print-area">
-            <Ticket :showLogo="true" :showOrder="true" :orderDetail="orderDetail" :goodsList="changeDishes"></Ticket>
+            <Ticket :showLogo="true" :showCancle="true" :showOrder="true" :isPrintOrder="true" :orderDetail="orderDetail"
+              :showContact="false" :goodsList="latestDishes" :showEnCn="0"></Ticket>
           </div>
         </div>
         <!-- 打印订单 -->
@@ -552,7 +553,7 @@ const printTypes = [
     value: 0,
   },
   {
-    label: "打印菜品",
+    label: "取消的菜品",
     value: 1,
   },
   {
@@ -793,7 +794,7 @@ const checkAutoPrinte = () => {
       setTimeout(() => { printData() }, 500)
     }
     setTimeout(() => {
-      router.push({ path: "/main"})
+      router.push({ path: "/main" })
     }, 500);
   };
 };

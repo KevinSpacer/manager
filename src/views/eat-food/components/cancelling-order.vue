@@ -90,6 +90,7 @@ const init = () => {
 
 // 删除标签
 const handleClose = (tag, index) => {
+	console.log('取消')
 	dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1);
 	if (index === chooseIndex.value) {
 		chooseIndex.value = "";

@@ -183,8 +183,9 @@ const chooseType = ref("");
 watch(
   () => chooseType.value,
   (nVal) => {
+    console.log(nVal)
     if (nVal == 3) {
-      playParams.payAmount = activeAcount;
+      playParams.payAmount = 0;//初始键盘付钱
     }
     playTypeList.value.map((d) => (d.checked = d.id == nVal));
     const item = playTypeList.value.find((d) => d.id == nVal);
@@ -195,7 +196,7 @@ watch(
 
 watch(() => playParams.payAmount, (nval) => {
   console.log(nval)
-  console.log(props.currAcount);
+  console.log(playParams.payAmount);
   if (nval > 0) {
     payReceive.value = (playParams.payAmount - originalPrice.value.originPrice).toFixed(2)
     if (payReceive.value < 0) {
@@ -236,11 +237,11 @@ const playOver = async (call) => {
     return;
   }
 
-  if (originalPrice.value.originPrice > props.currAcount) {
-    console.log("new added item is here")
-    playParams.addNewItem = true;
-    playParams.payAmount = originalPrice.value.originPrice;
-  }
+  // if (originalPrice.value.originPrice > props.currAcount) {
+  //   console.log("new added item is here")
+  //   playParams.addNewItem = true;
+  //   playParams.payAmount = originalPrice.value.originPrice;
+  // }
   call ? call() : "";
   emits("confirm", playParams);
 };
@@ -291,7 +292,8 @@ const returnBack = () => {
 
 onMounted(() => {
   getPlayTypeList();
-  playParams.payAmount = 0;
+  playParams.payAmount = 0
+  console.log(playParams.payAmount);
 });
 </script>
 
