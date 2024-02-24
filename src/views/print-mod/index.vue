@@ -789,6 +789,7 @@ const checkAutoPrinte = () => {
   selectDishe(0);
   if (routeQuery.autoPrinted == 1 || routeQuery.autoPrinted == 2) {
     printData();
+    // 结算打印
     if (routeQuery.autoPrinted == 2) {
       printTypeVal.value = 2;
       setTimeout(() => { printData() }, 500)

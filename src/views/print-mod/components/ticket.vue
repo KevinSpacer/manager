@@ -123,7 +123,7 @@
       <p class="info-line allCount">
         <span>{{ $LANG_TEXT("Total") }}</span>
         <span>{{ printGoods.length }}</span>
-        <span>{{ resultPrice.orderMoney.toFixed(2) - resultPrice.taxRateMoney.toFixed(2) }}</span>
+        <span>{{  resultPrice.orderMoney.toFixed(2)  }}</span>
       </p>
       <p class="info-line">
         <!-- <span>{{ $LANG_TEXT("优惠金额") }}</span> -->

@@ -1098,16 +1098,16 @@ const rightChangeCount = (count, item) => {
   const isHave = addedToCart.value.find((d) => d.goodsId == item.goodsId);
   // console.log(item)
   // console.log(addedToCart.value)
-  // if (isHave) {
-  //   // 增加数量
-  //   const index = addedToCart.value.findIndex((d) => d.goodsId == item.goodsId);
-  //   addedToCart.value[index].goodsQuantity = count;
-  // } else {
-  item.goodsQuantity = 1;
-  addedToCart.value.push(item);
-  // }
+  if (isHave) {
+    // 增加数量
+    const index = addedToCart.value.findIndex((d) => d.goodsId == item.goodsId);
+    addedToCart.value[index].goodsQuantity = count;
+  } else {
+    item.goodsQuantity = 1;
+    addedToCart.value.push(item);
+  }
 
-  // console.log(addedToCart);
+  console.log(addedToCart);
 };
 
 // 获取当前已在购物车中的商品状态
@@ -1184,20 +1184,29 @@ const pushNewGoods = (goods) => {
 // 规格弹窗 确认加入购物车
 const joinCarResult = (result) => {
   // 已加入购物车中是否存在该菜品
-  console.log("new spec is added into the chat ");
   console.log(result);
   let isHave = addedToCart.value.findIndex((d) => d.skuId == result.skuId);
-  console.log(isHave);
   if (isHave == -1) {
-    result.goodsQuantity = 1;
     addedToCart.value.push(result);
-    console.log(addedToCart);
     joinCarRef.value.closeDialog();
   } else {
-    result.goodsQuantity = 1;
-    addedToCart.value[isHave].dishesSpecificationList = result.dishesSpecificationList;
-    addedToCart.value[isHave].dishesSpicesList = result.dishesSpicesList;
-    console.log(addedToCart);
+    // 是否有调味
+    const len = addedToCart.value[isHave].customDishesSpicesList && addedToCart.value[isHave].customDishesSpicesList.length
+    if (len > 0) {
+      // 有调味新加一个
+      let pushIndex = addedToCart.value.findIndex((d) => d.skuId == result.skuId && !d.customDishesSpicesList);
+      if (pushIndex > 0) {
+        //菜品已存在 菜品数量直接+1
+        addedToCart.value[pushIndex].goodsQuantity += 1
+      } else {
+        addedToCart.value.push(result);
+      }
+    } else {
+      addedToCart.value[isHave].dishesSpecificationList = result.dishesSpecificationList;
+      addedToCart.value[isHave].dishesSpicesList = result.dishesSpicesList;
+      //菜品已存在 菜品数量直接+1
+      addedToCart.value[isHave].goodsQuantity += 1
+    }
     joinCarRef.value.closeDialog();
   }
 };

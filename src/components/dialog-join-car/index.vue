@@ -470,6 +470,7 @@ const submitJoinCar = () => {
 	delete obj["dishesSpecificationList"];
 	obj.goodsId = obj.id;
 	obj.goodsType = props.goodsType;
+	obj.goodsQuantity = 1
 	delete obj["id"];
 
 	if (props.goodsType == "DISHES") {
