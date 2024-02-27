@@ -3,20 +3,11 @@
   <div class="container">
     <!-- 订单明细 -->
     <div>
-      <price-details
-      :orderId="routeParams.orderId"
-      initiatePayType="DIRECT_PAY"
-    ></price-details>
+      <price-details :orderId="routeParams.orderId" initiatePayType="DIRECT_PAY"></price-details>
     </div>
     <div class="sum-box">
-      <payment-box
-        :openPayBtn="true"
-        v-model="payParams"
-        :currAcount="orderDetail.payAmount"
-        @confirm="payOver"
-        @printBill="printBill"
-        @back="back"
-      ></payment-box>
+      <payment-box :openPayBtn="true" v-model="payParams" :currAcount="orderDetail.payAmount" @confirm="payOver"
+        @printBill="printBill" @back="back"></payment-box>
     </div>
   </div>
 </template>
@@ -41,10 +32,10 @@ let routeParams = route.query;
 const emits = defineEmits(["submitOrder",]);
 //
 const props = defineProps({
-	modelValue: {
-		type: [String, Number,Object],
-		default: "",
-	},
+  modelValue: {
+    type: [String, Number, Object],
+    default: "",
+  },
 });
 // 判空
 const isEmpty = ["", undefined, null];
@@ -72,40 +63,41 @@ const getOrderPayDetail = async () => {
     const curr = result[0];
     payParams.value = {
       id: curr.id,
-      // payAmount: curr.payAmount,
-      payAmount: 0,
+      payAmount: curr.payAmount,
+      // payAmount: 0,
     };
     orderDetail.value = curr;
     // console.log(payParams.value)
     // console.log(curr)
-  } catch (error) {}
+  } catch (error) { }
 };
 
 // 结账完成
 const payOver = async (params) => {
-  if(!props.modelValue.id || params.addNewItem){
+  if (!props.modelValue.id || params.addNewItem) {
     //console.log(params.id)
-    emits("submitOrder",params)
-  }else{
-  const { payAmount } = params;
-  const result = {
-    ...params,
-  };
-  if (orderDetail.value.payAmount <= payAmount) {
-    result.payAmount = orderDetail.value.payAmount;
+    emits("submitOrder", params)
+  } else {
+    const { payAmount } = params;
+    const result = {
+      ...params,
+    };
+    if (orderDetail.value.payAmount <= payAmount) {
+      result.payAmount = orderDetail.value.payAmount;
+    }
+    try {
+      console.log(result);
+      await proxy.$storeDispatch("fetchPayOrderAmount", result);
+      proxy.$message.success(proxy.$LANG_TEXT("结账完成"));
+      printBill();
+    } catch (error) { }
   }
-  try {
-    console.log(result);
-    await proxy.$storeDispatch("fetchPayOrderAmount", result);
-    proxy.$message.success(proxy.$LANG_TEXT("结账完成"));
-    printBill();
-  } catch (error) {}
-}};
+};
 
 // 打印账单
 const printBill = (params) => {
   console.log(params); // 跳转打印
-  router.push({ path: "/printMod", query: { orderId: routeParams.orderId,type:2,autoPrinted:1}});
+  router.push({ path: "/printMod", query: { orderId: routeParams.orderId, type: 2, autoPrinted: 1 } });
 };
 
 // 返回
@@ -138,7 +130,6 @@ onMounted(async () => {
   grid-template-rows: 1fr 570px;
   margin: auto;
 
-  .sum-box {
-  }
+  .sum-box {}
 }
 </style>

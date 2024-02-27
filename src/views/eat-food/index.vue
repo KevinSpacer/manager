@@ -1089,7 +1089,6 @@ const currCombine = computed(() => {
 });
 
 // 加入购物车
-// ref
 const joinCarRef = ref();
 
 //右侧 菜品数量变动 加入购物车
@@ -1129,15 +1128,13 @@ const dialogProduct = ref({});
 
 // 右侧 选择规格
 const changeSpec = (detail) => {
-  console.log(detail);
-  console.log(detail.skuId);
   dialogProduct.value = detail;
   joinCarRef.value.openDialog();
 };
 
 // 加入新菜品
 const pushNewGoods = (goods) => {
-  console.log(goods);
+  // console.log(goods);
   const items = addedToCart.value.filter(
     (item) => item.goodsId == goods.goodsId
   );
@@ -1151,11 +1148,6 @@ const pushNewGoods = (goods) => {
       !(item.status == "ALREADY") &&
       item.goodsId == goods.goodsId
   );
-  console.log(Paid);
-  console.log(hasSpicesList);
-  // console.log(goods);
-  // console.log(items);
-  // console.log(goodsIndex);
   // 存在自定义调味品
   if (Paid == -1) {
     //已付，调味
@@ -1176,7 +1168,6 @@ const pushNewGoods = (goods) => {
       goods.goodsQuantity = 1;
       const copiedItem = JSON.parse(JSON.stringify(goods));
       delete copiedItem.customDishesSpicesList;
-      console.log(copiedItem);
       addedToCart.value.push(copiedItem);
     }
   }
@@ -1184,7 +1175,7 @@ const pushNewGoods = (goods) => {
 // 规格弹窗 确认加入购物车
 const joinCarResult = (result) => {
   // 已加入购物车中是否存在该菜品
-  console.log(result);
+  // console.log(result);
   let isHave = addedToCart.value.findIndex((d) => d.skuId == result.skuId);
   if (isHave == -1) {
     addedToCart.value.push(result);
@@ -1209,11 +1200,13 @@ const joinCarResult = (result) => {
     }
     joinCarRef.value.closeDialog();
   }
+  console.log('加入购物车后的购物车', addedToCart.value)
 };
 
 // 购物车列表
 // 监听数量变动
 const carListChangeCount = (count, item, index) => {
+  console.log('当前', index);
   setTimeout(async () => {
     // goodsType
     // DISHES:菜品、CUSTOM_DISHES:自定义菜品、SET_MEAL:套餐
@@ -1262,11 +1255,13 @@ const carListChangeCount = (count, item, index) => {
       // 清除数据
       if (!item.goodsQuantity) {
         console.log("清除数据");
-        console.log(item);
-        console.log(item.goodsQuantity);
+        // console.log(item);
+        // console.log(item.goodsQuantity);
+        // console.log('删除前',addedToCart.value);
         addedToCart.value.splice(index, 1);
       }
     });
+    console.log('删除后', addedToCart.value);
   });
 };
 // 取消菜品
@@ -1455,6 +1450,7 @@ const stagingOrder = async (params, type) => {
         const res = await proxy.$storeDispatch("fetchGetOrderPayDetailList", routeParams.orderId);
         const result = {}
         result.id = res.result[0].id
+
         result.payAmount = orderDetail.value.actuallyPaidMoney;
         result.paymentMethodName = params.paymentMethodName;
         result.paymentMethodNameLanguage = params.paymentMethodNameLanguage;
@@ -1579,6 +1575,7 @@ const updateOrderDishes = async (params) => {
 };
 
 const changeCarListItem = (index) => {
+  console.log(addedToCart.value[index])
   condiments.value = addedToCart.value[index] && addedToCart.value[index].customDishesSpicesList || []
   if (chooseCarGoodsIndex.value === "") {
     chooseCarGoodsIndex.value = index;
@@ -1627,6 +1624,7 @@ const toolDialogType = ref("");
 const toolDialogRef = ref();
 // 打开多功能弹窗
 const openToolDialog = (type) => {
+  console.log(routeParams)
   toolDialogType.value = type;
   console.log('打开多功能', toolDialogType.value);
   // 合单赋值当前订单号
