@@ -78,7 +78,10 @@ watch(() => props.modelValue, (nval) => {
   showListData.value = nval
   console.log(showListData.value);
 })
-
+watch(() => props.goodsDetail, (nval) => {
+  console.log(nval);
+  parentData.value = nval
+})
 const isEmpty = ["", undefined, null];
 // 展示 调味品展示数据
 const showListData = computed(() => {

@@ -156,10 +156,11 @@ const playParams = reactive({
 watch(
   () => props.modelValue,
   (nVal) => {
-    // console.log(nVal);
+    console.log(nVal);
     for (let i in nVal) {
       playParams[i] = nVal[i];
     }
+    console.log(playParams);
   }
 );
 
@@ -174,7 +175,7 @@ watch(
 );
 
 watch(playParams, (nVal) => {
-  // console.log(nVal);
+  console.log(nVal);
   emits("update:modelValue", nVal);
 });
 
@@ -243,6 +244,7 @@ const playOver = async (call) => {
   //   playParams.payAmount = originalPrice.value.originPrice;
   // }
   call ? call() : "";
+  console.log(playParams);
   emits("confirm", playParams);
 };
 
