@@ -683,7 +683,8 @@ const printData = async (call) => {
         call();
       }
       // 调用打印方法，参数0，1，2，代表要打印的场景
-      btnClickPrint(0);
+      // 厨房订单 0 ，删除菜品 1 调用该方法
+      kitchenPrint(0);
     } else {
       // 打印记录
       if (printTypeVal.value == 3) {
@@ -708,6 +709,8 @@ const printData = async (call) => {
           } catch (error) {
             call();
           }
+          // 前台结账单打印方法
+          cashierPrint();
         });
       }
     }
@@ -718,9 +721,13 @@ const printData = async (call) => {
 };
 
 // 打印模板，需根据不同场景进行配置
-const btnClickPrint = (value) => {
+// 厨房打印
+const kitchenPrint = () => {}
+// 前台打印
+const cashierPrint = (value) => {
   let LODOP = getLodop()//调用getLodop获取LODOP对象
   LODOP.PRINT_INIT("")
+  LODOP.SET_PRINT_PAGESIZE(3,"80mm","1mm","");  
   // 餐厅名字
   LODOP.ADD_PRINT_TEXT(38, 9, 285, 51, roomDetail.value.name);
   LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
@@ -746,6 +753,7 @@ const btnClickPrint = (value) => {
   // 打印时间
   let date = new Date().toLocaleString();
   LODOP.ADD_PRINT_TEXT(168, 11, 144, 18, date);
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
   // 服務員
   LODOP.ADD_PRINT_TEXT(167, 190, 100, 20, routeParams.waiterName);
   // 当日订单号码
@@ -758,29 +766,58 @@ const btnClickPrint = (value) => {
   // Loop 菜品数量，名称
   let top = 225;
   let subTotal = 0;
-  for(let i = 0; i < latestDishes.value.length; i++) {
-    console.log(latestDishes.value[i]);
-    LODOP.ADD_PRINT_TEXT(top, 14, 20, 25, latestDishes.value[i].goodsQuantity);
+  for(let i = 0; i < addedToCart.value.length; i++) {
+    let dishItemObj = addedToCart.value[i];
+    if(isEmpty.includes(dishItemObj.nameLanguage)){
+      console.log("this is not item we need")
+    }else{
+    console.log(dishItemObj);
+    LODOP.ADD_PRINT_TEXT(top, 14, 20, 25, dishItemObj.goodsQuantity);
     LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
-    LODOP.ADD_PRINT_TEXT(top, 34, 183, 25, latestDishes.value[i].nameLanguage);
+    let name;
+    let nameLanguage
+    let price;
+    //  规格
+    if(dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList.length != 0){
+      name = dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList[0].name
+      console.log(name);
+      nameLanguage = dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList[0].nameLanguage
+      console.log(nameLanguage);
+      price = dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList[0].price
+      console.log(price);
+    }
+    //  调味 结账单无需打印 省纸
+    //  整合内容
+    LODOP.ADD_PRINT_TEXT(top, 34, 183, 25, dishItemObj.nameLanguage+"("+nameLanguage+")");
+    LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+    LODOP.SET_PRINT_STYLEA(0, "FontSize", 12);
+    LODOP.ADD_PRINT_TEXT(top, 215, 51, 25, Number(dishItemObj.goodsPrice)+Number(price));
     LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
     LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
-    LODOP.ADD_PRINT_TEXT(top, 215, 51, 25, latestDishes.value[i].goodsPrice);
-    LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
-    LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
-    LODOP.ADD_PRINT_TEXT(top+30, 34, 182, 25, latestDishes.value[i].name);
+    // 中文名字
+    LODOP.ADD_PRINT_TEXT(top+40, 34, 182, 25, dishItemObj.name+"("+name+")");
     LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
     LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
     top += 60;
-    subTotal += (Number(latestDishes.value[i].goodsQuantity*Number(latestDishes.value[i].goodsPrice)));
+    subTotal += (Number(dishItemObj.goodsQuantity*(Number(dishItemObj.goodsPrice)+Number(price))));
     console.log("餐费总计 " + subTotal);
+    }
   }
-  // 计算总额
-  LODOP.ADD_PRINT_LINE(340,10,340,260,0,1);
-  LODOP.ADD_PRINT_TEXT(top, 72, 58, 25, "Subtotal:");
+  // 检查付款状态和金额
+  let orderStatus = "Unpaid";
+  let methodPaid = "";
+  let amountPaid = 0
+  if(!payOrderList.value.length == 0){
+    orderStatus = payOrderList.value[0].status;
+    methodPaid = payOrderList.value[0].paymentMethodNameLanguage
+    amountPaid = payOrderList.value[0].payAmount
+  }
+  // 计算税前总额
+  LODOP.ADD_PRINT_LINE(top,10,top,260,0,1);
+  LODOP.ADD_PRINT_TEXT(top+5, 72, 58, 25, "Subtotal:");
   LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
   LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
-  LODOP.ADD_PRINT_TEXT(top, 215, 50, 25,"$"+subTotal);
+  LODOP.ADD_PRINT_TEXT(top+5, 215, 50, 25,"$"+subTotal);
   LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
   LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
 
@@ -788,46 +825,46 @@ const btnClickPrint = (value) => {
   // 计算税率
   let taxRate = baseConfigInfo.value.taxRate;
   let tax = (taxRate /100 * subTotal).toFixed(2)
-  LODOP.ADD_PRINT_TEXT(364, 72, 70, 25, "Tax"+"("+ taxRate+"%"+")");
+  LODOP.ADD_PRINT_TEXT(top+30, 72, 70, 25, "Tax"+"("+ taxRate+"%"+")");
   LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
   LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
-  LODOP.ADD_PRINT_TEXT(364, 215, 55, 25,"$" + tax);
+  LODOP.ADD_PRINT_TEXT(top+30, 215, 55, 25,"$" + tax);
   LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
   LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
 
   // 计算总额+税率
   let total = subTotal+Number(tax)
-  LODOP.ADD_PRINT_TEXT(382, 72, 50, 25, "Total");
+  LODOP.ADD_PRINT_TEXT(top+55, 72, 50, 25, "Total");
   LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
   LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
-  LODOP.ADD_PRINT_TEXT(382, 200, 70, 25,"$" + total);
+  LODOP.ADD_PRINT_TEXT(top+55, 200, 70, 25,"$" + total);
   LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
   LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
 
   // 是否已经付费 需要找到原始数据
-  LODOP.ADD_PRINT_TEXT(404, 127, 100, 20, "PAID");
+  LODOP.ADD_PRINT_TEXT(top+80,100, 100, 20,orderStatus);
   LODOP.SET_PRINT_STYLEA(0, "FontName", "TImes New Roman");
   LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
   LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
   // 付款方式（现金，信用卡，其他方式）
-  LODOP.ADD_PRINT_TEXT(423, 45, 244, 21, "Cash ($16.22, Change: $ 0.00)");
+  LODOP.ADD_PRINT_TEXT(top+100, 45, 244, 20, methodPaid+"($ "+amountPaid + ",   Change: $ 0.00)");
   // 小费提示语
-  LODOP.ADD_PRINT_TEXT(440, 90, 121, 20, "Tips Suggestions");
-  LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+  LODOP.ADD_PRINT_TEXT(top+120, 80, 121, 20, "Tips Suggestions");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
   // 18% 小费计算
-  LODOP.ADD_PRINT_TEXT(463, 110, 110, 16, "18%:   $2.92");
+  LODOP.ADD_PRINT_TEXT(top+140, 100, 100, 15, "18%: "+ (total*0.18).toFixed(2));
   LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
   LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
   // 20% 小费计算
-  LODOP.ADD_PRINT_TEXT(478, 111, 100, 20, "20%:   $3.24");
+  LODOP.ADD_PRINT_TEXT(top+155, 100, 100, 15, "20%: "+(total*0.2).toFixed(2));
   LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
   LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
   // 22% 小费计算
-  LODOP.ADD_PRINT_TEXT(493, 111, 100, 20, "22%:   $3.57");
+  LODOP.ADD_PRINT_TEXT(top+170, 100, 100, 15, "22%: " + (total*0.22).toFixed(2));
   LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
   LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
   // 感谢语
-  LODOP.ADD_PRINT_TEXT(536, 78, 214, 15, "Thanks for your welcome");
+  LODOP.ADD_PRINT_TEXT(top+185, 78, 214, 15, "Thanks for your welcome");
   // 指定哪一个打印机打印
   LODOP.SET_PRINTER_INDEX("receipt");
   //LODOP.SET_PRINT_MODE("PRINT_PAGE_PERCENT","100%");
@@ -835,7 +872,7 @@ const btnClickPrint = (value) => {
   // 弹窗设计界面，可以快速排版格式，并生产相应JS代码
   //LODOP.PRINT_DESIGN();
   // 弹窗预览界面，检查打印效果
-  LODOP.PREVIEW();
+  //LODOP.PREVIEW();
   // 直接打印
   LODOP.PRINT();
 }
