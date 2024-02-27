@@ -166,6 +166,7 @@ import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import listItem from "../eat-food/components/list-item.vue";
 import { orderTypeOpts } from "@/utils/options";
+import { getLodop } from '../../API/LodopFuncs' //导入模块
 
 const { proxy } = getCurrentInstance();
 
@@ -198,6 +199,8 @@ const addedToCart = ref([]);
 // 基本信息
 const baseConfigInfo = computed(() => mainModule.baseConfigInfo);
 
+// 餐厅信息
+const roomDetail = computed(() => mainModule.roomDetail);
 // 判空
 const isEmpty = ["", undefined, null];
 
@@ -674,11 +677,13 @@ const printData = async (call) => {
 
       try {
         await proxy.$storeDispatch("fetchAddKitchenPrint", addKitchenPrintList);
-        call();
+        //call();
         proxy.$message.success(proxy.$LANG_TEXT("已加入打印队列"));
       } catch (error) {
         call();
       }
+      // 调用打印方法，参数0，1，2，代表要打印的场景
+      btnClickPrint(0);
     } else {
       // 打印记录
       if (printTypeVal.value == 3) {
@@ -712,6 +717,128 @@ const printData = async (call) => {
   }
 };
 
+// 打印模板，需根据不同场景进行配置
+const btnClickPrint = (value) => {
+  let LODOP = getLodop()//调用getLodop获取LODOP对象
+  LODOP.PRINT_INIT("")
+  // 餐厅名字
+  LODOP.ADD_PRINT_TEXT(38, 9, 285, 51, roomDetail.value.name);
+  LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 15);
+  LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+  LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+  // 用餐类型
+  LODOP.ADD_PRINT_TEXT(22, 227, 37, 20, orderDetail.value.type == "TAKE_FOOD" ? "等取" : "外送");
+  // 餐厅地址
+  LODOP.ADD_PRINT_TEXT(90, 72, 160, 36, roomDetail.value.address);
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+  LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+  // 餐厅电话
+  LODOP.ADD_PRINT_TEXT(125, 0, 284, 21, roomDetail.value.contactWay);
+  LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+  // 餐厅网址, 没有不显示
+  if (value == 0) {
+    LODOP.ADD_PRINT_TEXT(141, 12, 283, 20, "www.laokeleshanghai.com");
+    LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+  }
+  // 分割线
+  LODOP.ADD_PRINT_LINE(168, 0, 168, 275, 2, 1);
+  // 打印时间
+  let date = new Date().toLocaleString();
+  LODOP.ADD_PRINT_TEXT(168, 11, 144, 18, date);
+  // 服務員
+  LODOP.ADD_PRINT_TEXT(167, 190, 100, 20, routeParams.waiterName);
+  // 当日订单号码
+  LODOP.ADD_PRINT_TEXT(190, 14, 128, 30, "#"+orderDetail.value.daySerialNo);
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 15);
+  //
+  //LODOP.ADD_PRINT_TEXT(195, 188, 92, 21, "等取");
+  //LODOP.SET_PRINT_STYLEA(0, "FontSize", 11);
+  LODOP.ADD_PRINT_LINE(220, -0, 220, 293, 0, 2);
+  // Loop 菜品数量，名称
+  let top = 225;
+  let subTotal = 0;
+  for(let i = 0; i < latestDishes.value.length; i++) {
+    console.log(latestDishes.value[i]);
+    LODOP.ADD_PRINT_TEXT(top, 14, 20, 25, latestDishes.value[i].goodsQuantity);
+    LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+    LODOP.ADD_PRINT_TEXT(top, 34, 183, 25, latestDishes.value[i].nameLanguage);
+    LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+    LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+    LODOP.ADD_PRINT_TEXT(top, 215, 51, 25, latestDishes.value[i].goodsPrice);
+    LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+    LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+    LODOP.ADD_PRINT_TEXT(top+30, 34, 182, 25, latestDishes.value[i].name);
+    LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+    LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+    top += 60;
+    subTotal += (Number(latestDishes.value[i].goodsQuantity*Number(latestDishes.value[i].goodsPrice)));
+    console.log("餐费总计 " + subTotal);
+  }
+  // 计算总额
+  LODOP.ADD_PRINT_LINE(340,10,340,260,0,1);
+  LODOP.ADD_PRINT_TEXT(top, 72, 58, 25, "Subtotal:");
+  LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+  LODOP.ADD_PRINT_TEXT(top, 215, 50, 25,"$"+subTotal);
+  LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+
+  // 计算其他费用，如果存在
+  // 计算税率
+  let taxRate = baseConfigInfo.value.taxRate;
+  let tax = (taxRate /100 * subTotal).toFixed(2)
+  LODOP.ADD_PRINT_TEXT(364, 72, 70, 25, "Tax"+"("+ taxRate+"%"+")");
+  LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+  LODOP.ADD_PRINT_TEXT(364, 215, 55, 25,"$" + tax);
+  LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+
+  // 计算总额+税率
+  let total = subTotal+Number(tax)
+  LODOP.ADD_PRINT_TEXT(382, 72, 50, 25, "Total");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+  LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+  LODOP.ADD_PRINT_TEXT(382, 200, 70, 25,"$" + total);
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+  LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+
+  // 是否已经付费 需要找到原始数据
+  LODOP.ADD_PRINT_TEXT(404, 127, 100, 20, "PAID");
+  LODOP.SET_PRINT_STYLEA(0, "FontName", "TImes New Roman");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+  LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+  // 付款方式（现金，信用卡，其他方式）
+  LODOP.ADD_PRINT_TEXT(423, 45, 244, 21, "Cash ($16.22, Change: $ 0.00)");
+  // 小费提示语
+  LODOP.ADD_PRINT_TEXT(440, 90, 121, 20, "Tips Suggestions");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+  // 18% 小费计算
+  LODOP.ADD_PRINT_TEXT(463, 110, 110, 16, "18%:   $2.92");
+  LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+  // 20% 小费计算
+  LODOP.ADD_PRINT_TEXT(478, 111, 100, 20, "20%:   $3.24");
+  LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+  // 22% 小费计算
+  LODOP.ADD_PRINT_TEXT(493, 111, 100, 20, "22%:   $3.57");
+  LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+  // 感谢语
+  LODOP.ADD_PRINT_TEXT(536, 78, 214, 15, "Thanks for your welcome");
+  // 指定哪一个打印机打印
+  LODOP.SET_PRINTER_INDEX("receipt");
+  //LODOP.SET_PRINT_MODE("PRINT_PAGE_PERCENT","100%");
+  //LODOP.PRINTSETUP_PERCENT(8)
+  // 弹窗设计界面，可以快速排版格式，并生产相应JS代码
+  //LODOP.PRINT_DESIGN();
+  // 弹窗预览界面，检查打印效果
+  LODOP.PREVIEW();
+  // 直接打印
+  LODOP.PRINT();
+}
 // 获取
 const getHtmk2canvas = (dom) => {
   return new Promise((resolve, resject) => {
