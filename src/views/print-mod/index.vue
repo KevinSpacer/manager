@@ -754,7 +754,6 @@ const kitchenPrint = () => {
   for(let i = 0; i < latestDishes.value.length; i++) {
     let dishItemObj = latestDishes.value[i];
     if(isEmpty.includes(dishItemObj.nameLanguage)){
-      console.log("this is not item we need")
     }else{
     LODOP.ADD_PRINT_TEXT(top, 14, 20, 25, dishItemObj.goodsQuantity);
     LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
@@ -773,7 +772,7 @@ const kitchenPrint = () => {
     // 中文名字
     LODOP.ADD_PRINT_TEXT(top, 34, 260, 25, dishItemObj.name+"("+name+")");
     LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
-    LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
+    LODOP.SET_PRINT_STYLEA(0, "FontSize", 15);
     for(let i = 0; i < dishItemObj.customDishesSpicesList.length; i++){
     LODOP.ADD_PRINT_TEXT(top+25, 34, 260, 25,"   "+dishItemObj.customDishesSpicesList[i].name);
     LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
@@ -787,7 +786,7 @@ const kitchenPrint = () => {
   LODOP.SET_PRINTER_INDEX("Kitchen");
   // 弹窗预览界面，检查打印效果
   //LODOP.PRINT_DESIGN();
-  //LODOP.PREVIEW();
+  LODOP.PREVIEW();
   // 直接打印
   LODOP.PRINT();
 }
