@@ -294,7 +294,7 @@ export const phonePwdStr = (phone) => {
 export const sumDisheDiscountPrice = (dishe) => {
   // 打折
   if (dishe.isDiscount == "YES") {
-    const dishePrice = dishe.price * dishe.goodsQuantity;
+    const dishePrice = dishe.newPrice * dishe.goodsQuantity;
 
     // 订单折扣
     if (dishe.dishesDiscountType == "PERCENT" && Number(dishe.dishesDiscount)) {

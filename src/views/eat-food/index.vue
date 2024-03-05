@@ -175,10 +175,10 @@
                 {{ $LANG_TEXT("订单金额（原价）") }}：
                 <span> ${{ getTotalOrderAmount.originPrice }} </span>
               </p>
-              <p class="total-price">
+              <!-- <p class="total-price">
                 {{ $LANG_TEXT("实付金额") }}：
-                <span> ${{ paidAmount }} </span>
-              </p>
+                <span> ${{ paidAmount || paidAmountBeforePlaced.toFixed(2) }} </span>
+              </p> -->
 
               <p>
                 {{ $LANG_TEXT("抹零") }}：{{
@@ -324,7 +324,7 @@
               {{ $LANG_TEXT("合单") }}
             </el-button> -->
             <!-- 折扣 -->
-            <el-button type="warning" @click.stop="opendiscountDialog">
+            <el-button type="warning" @click.stop="opendiscountDialog" :disabled="!routeParams.orderId">
               <el-icon>
                 <Discount />
               </el-icon>
@@ -1887,7 +1887,7 @@ const toolDialogConfirm = async (call) => {
       deleteDishes()
       closeToolDialog(call);
       otherDialogRef.value.closeDialog();
-      printJump()
+      //printJump()
       break;
   }
 };
@@ -2276,6 +2276,7 @@ const toAddedCarData = (list, type) => {
     }
 
     // 打折金额
+    result.newPrice = item.goodsPrice + item.goodsOtherPrice
     result.discountPrice = proxy.$sumDisheDiscountPrice(result);
 
     // console.log(result);
@@ -2386,7 +2387,7 @@ const getOrderIdDetail = async (id) => {
       // 是否有进行中账单
       const status = ["NO_PAY", "IN_PAY"];
       if (status.includes(initiatePayStatus) && isInitiatePay == "YES") {
-        paidPayDialogRef.value.openDialog();
+        //paidPayDialogRef.value.openDialog();
       }
     } else {
       router.replace("/main");
@@ -2480,7 +2481,7 @@ const getTotalOrderAmount = computed(() => {
     // 当前菜品单价
     const price = Number(originItem.price || 0);
     res += price;
-    disCountPrice += price;
+    //disCountPrice += price;
 
     // console.log(originItem);
     // 单个菜品折扣
@@ -2491,12 +2492,12 @@ const getTotalOrderAmount = computed(() => {
       if (discountType) {
         // 定额
         if (discountType == "QUOTA") {
-          disCountPrice -= discount;
+          disCountPrice = Number(originItem.discountPrice) || originItem.newPrice;
         } else {
-          if (discount != 100) {
+         // if (discount != 100) {
             const bdiscount = discount / 100;
-            disCountPrice = bdiscount * disCountPrice;
-          }
+            disCountPrice = Number(originItem.discountPrice) || originItem.newPrice;
+          //}
         }
       }
     }
@@ -2562,7 +2563,7 @@ const getTotalOrderAmount = computed(() => {
     payValue += oneGoodsPrice;
 
     // -普通单价 +折扣价
-    originItem.payPrice = payValue - price + disCountPrice;
+    originItem.payPrice = disCountPrice;
     originItem.originPrice = oneGoodsPrice;
     return originItem;
   });
@@ -2740,6 +2741,12 @@ const paidAmount = computed(
     toolForm.notCount.maLingMoney ||
     getTotalOrderAmount.value.payPrice
 );
+// 未下单前，需要计算价格去显示
+const paidAmountBeforePlaced = computed(
+  () => {
+    let amountBeforePlaced = getTotalOrderAmount.value.originPrice * (toolForm.taxRate/100 + 1)
+    return amountBeforePlaced
+  });
 
 // ***********************************************************************************
 // 计算 END
@@ -2847,6 +2854,8 @@ const openOtherDialog = () => {
 const discountDialogRef = ref();
 // 打开折扣弹窗
 const opendiscountDialog = () => {
+  // 点击折扣按钮自动切换到整单打折，指针归零
+  chooseCarGoodsIndex.value = "";
   discountDialogRef.value.openDialog();
 };
 // 点击弹窗按钮
@@ -3072,6 +3081,7 @@ const openKeyboard = (tp) => {
 const customerConfirmRemark = () => {
   drawer.value = false;
 };
+let amountBeforePlaced = 0
 // fix index of dish choosen auto jump to new added dish
 watch(
   () => addedToCart.value.length,
@@ -3081,7 +3091,7 @@ watch(
   });
 //provide below 2 to the child element of payment zizhen guo 01-25-2024
 provide('price', getTotalOrderAmount);
-provide('taxRate', goodsDetailed);
+provide('taxRate',8.88);
 //检测是否自动付款
 const checkOpenPaymentBox = () => {
   if (routeQuery.autoOpenPayment == 1) {

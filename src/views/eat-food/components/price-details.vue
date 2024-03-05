@@ -6,11 +6,7 @@
       <h3>{{ $LANG_TEXT(orderPayStatus[initiatePayType]) }}</h3>
     </div>
 
-    <p
-      v-for="(item, index) in priceDetails"
-      :class="item.className"
-      :key="'index' + index"
-    >
+    <p v-for="(item, index) in priceDetails" :class="item.className" :key="'index' + index">
       <span>{{ $LANG_TEXT(item.label) }}：</span>
       <span class="value">{{ $LANG_TEXT(item.value) }}</span>
     </p>
@@ -66,14 +62,18 @@ const getCurrOrderPirce = async () => {
   if (!id) {
     // display price tax without order placed, preview both
     priceDetails.value.push({
-        label: `税率`,
-        value: `${taxRate.value.taxRateValue}`,
-      });
-      priceDetails.value.push({
-        label: `原价`,
-        value: `$${originalPrice.value.originPrice}`,
-      });
-      return;
+      label: `原价`,
+      value: `$${originalPrice.value.originPrice}`,
+    });
+    priceDetails.value.push({
+      label: `税率`,
+      value: `${taxRate}%`,
+    });
+    priceDetails.value.push({
+      label: `应付价格`,
+      value: `$${(originalPrice.value.originPrice * (taxRate / 100 + 1)).toFixed(2)}`,
+    });
+    return;
   }
   try {
     const res = await proxy.$storeDispatch("fetchCalculateOrderMoney", { id });
@@ -100,6 +100,18 @@ const getCurrOrderPirce = async () => {
       serviceChargeType,
       taxRate,
     } = result;
+
+    // 订单原价
+    if (originalPrice.value.originPrice > orderMoney) {
+      orderMoney = originalPrice.value.originPrice;
+      //actuallyPaidMoney = originalPrice.value.originPrice;
+      //console.log(orderMoney);
+    }
+    // priceDetails.value.push({
+    //   label: `订单金额（原价）`,
+    //   value: `$${(orderMoney || 0).toFixed(2)}`,
+    //   className: "total-price",
+    // });
 
     // 订单折扣
     if (discountType) {
@@ -129,7 +141,7 @@ const getCurrOrderPirce = async () => {
     if (orderDiscount) {
       priceDetails.value.push({
         label: `订单折扣（百分比）`,
-        value: `$${orderDiscount}%`,
+        value: `${100 - orderDiscount}%`,
       });
     }
 
@@ -151,21 +163,6 @@ const getCurrOrderPirce = async () => {
     }
 
     // 服务费
-    if (serviceCharge) {
-      const typeText = `（${serviceChargeTypes[serviceChargeType]}）`;
-      // 定额
-      if (serviceChargeType == "QUOTA") {
-        priceDetails.value.push({
-          label: `服务费`,
-          value: `$${serviceCharge} ${typeText}`,
-        });
-      } else {
-        priceDetails.value.push({
-          label: `服务费`,
-          value: `${serviceCharge}% ${typeText}`,
-        });
-      }
-    }
 
     // 税率
     if (taxRate) {
@@ -196,17 +193,6 @@ const getCurrOrderPirce = async () => {
     }
 
     // 订单金额
-    if(originalPrice.value.originPrice > orderMoney){
-      orderMoney = originalPrice.value.originPrice;
-      actuallyPaidMoney = originalPrice.value.originPrice;
-      console.log(orderMoney);
-    }
-    priceDetails.value.push({
-      label: `订单金额（原价）`,
-      value: `$${(orderMoney || 0).toFixed(2)}`,
-      className: "total-price",
-    });
-
     // 订单金额
     priceDetails.value.push({
       label: `应付金额`,
