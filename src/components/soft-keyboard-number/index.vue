@@ -6,8 +6,8 @@
 		<Keyboard v-if="type === 'number' || type === 'seat'" v-for="item in keyboards"
 			:loading="item.value == 'confirm' && isConfirm" :key="item.key" :keyProps="item" @keyBtn="getKeyBtn" />
 
-		<MultiKeyboard v-else v-for="item in keyboards" :key="item.value" :loading="item.value == 'confirm' && isConfirm"
-			:keyProps="item" @keyBtn="getKeyBtn" />
+		<MultiKeyboard v-else v-for="item in keyboards" :key="item.value"
+			:loading="item.value == 'confirm' && isConfirm" :keyProps="item" @keyBtn="getKeyBtn" />
 
 
 
@@ -440,10 +440,10 @@ const getKeyBtn = (key) => {
 			// 键盘确认时收起键盘 同事表单更新 1.31 Oneway
 			emits("handleClose")
 			console.log(props.tp);
-			if (props.tp == 'EAT_IN' || props.callerKeyboard === 'seat') {
+			if (props.tp == 'EAT_IN' || props.callerKeyboard === 'seat' || props.callerKeyboard === 'remark') {
 				emits("confirm")
 			}
-			
+
 			emits('changeInput', inputVal.value)
 		} else if (key == "back") {
 			emits("back", closeLoading);
@@ -456,10 +456,10 @@ const getKeyBtn = (key) => {
 	} else {
 		console.log(inputVal.value);
 		inputVal.value += key + '';
-		
+
 		console.log(inputVal.value);
 	}
-	
+
 	// 键盘内容更新到表单 1.31 Oneway
 	emits('changeInput', inputVal.value)
 };
