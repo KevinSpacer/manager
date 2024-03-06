@@ -29,7 +29,7 @@
 					></el-input>
 					<soft-keyboard-number
 						@confirm="numberDialogConfirm"
-						v-model="cashDiscountValue"
+						v-model="cashDiscountValue" @changeInput="keyDown"
 					></soft-keyboard-number>
 				</div>
 				<!-- 订单 -->
@@ -90,7 +90,15 @@ const props = defineProps({
 
 const { proxy } = getCurrentInstance();
 console.log(props);
-
+const keyDown = (value) => {
+  console.log(value);
+  if (value) {
+    value = value + '';
+	cashDiscountValue.value = value
+  }else {
+	cashDiscountValue.value = ''
+  }
+}
 const discountMannerVal = ref(props.discountManner);
 watch(()=>discountMannerVal.value,nVal=>{
 	// console.log('更新折扣方式:',nVal);

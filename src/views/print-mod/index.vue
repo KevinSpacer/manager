@@ -48,16 +48,16 @@
                       <i class="iconfont icon-discount" v-if="item.isDiscount == 'YES'"></i>
                       <!-- 百分比 -->
                       <span v-if="item.dishesDiscountType == 'PERCENT' &&
-                        Number(item.dishesDiscount) &&
-                        item.dishesDiscount != 100
-                        ">
+        Number(item.dishesDiscount) &&
+        item.dishesDiscount != 100
+        ">
                         (${{ item.discountPrice }})
                         <!-- (-{{ item.dishesDiscount }}%) -->
                       </span>
                       <!-- 定额 -->
                       <span v-if="item.dishesDiscountType == 'QUOTA' &&
-                        Number(item.dishesDiscount)
-                        ">
+        Number(item.dishesDiscount)
+        ">
                         (${{ item.discountPrice }})
                         <!-- (-${{ item.dishesDiscount }}) -->
                       </span>
@@ -114,8 +114,8 @@
         <!-- 打印菜品 -->
         <div class="all-down" v-if="printTypeVal == 1">
           <div id="print-area">
-            <Ticket :showLogo="true" :showCancle="true" :showOrder="true" :isPrintOrder="true" :orderDetail="orderDetail"
-              :showContact="false" :goodsList="latestDishes" :showEnCn="0"></Ticket>
+            <Ticket :showLogo="true" :showCancle="true" :showOrder="true" :isPrintOrder="true"
+              :orderDetail="orderDetail" :showContact="false" :goodsList="latestDishes" :showEnCn="0"></Ticket>
           </div>
         </div>
         <!-- 打印订单 -->
@@ -143,13 +143,14 @@
         <div @click="routeQuery.receiptType = 1" class="big-btn">{{ $LANG_TEXT("English Receipt") }}</div>
         <div @click="routeQuery.receiptType = 0" class="big-btn">{{ $LANG_TEXT("中文收据") }}</div>
         <div @click="routeQuery.receiptType = 2" class="big-btn">{{ $LANG_TEXT("EN_CN") }}</div>
-        <ml-btn size="large" class="big-btn" v-if="printTypeVal == 2 || printTypeVal == 0" @submit="printDataWithClopod">{{
+        <ml-btn size="large" class="big-btn" @submit="printDataWithClopod">{{
         $LANG_TEXT("打印") }}</ml-btn>
       </div>
+      <!-- v-if="printTypeVal == 2 || printTypeVal == 0" -->
     </div>
   </div>
 </template>
-  
+
 <script setup>
 import Ticket from "./components/ticket.vue";
 import html2canvas from "html2canvas";
@@ -260,7 +261,7 @@ const latestDishes = ref([]);
 watch(
   () => addedToCart.value.length,
   (nVal) => {
-    console.log("i am parparing ticket");
+    // console.log(nVal);
     let item;
     let indexOfArr = [];
     addedToCart.value.forEach(element => {
@@ -282,8 +283,9 @@ watch(
     //console.log(length);
     for (let i = index; i < length; i++) {
       latestDishes.value.push(addedToCart.value[i]);
-      //console.log(lastDishes);
+
     };
+    // console.log('latestDishes', latestDishes.value);
   });
 // 订单数据查询
 // 数据
@@ -297,7 +299,7 @@ const getTemporaryOrderShoppingList = async (id) => {
     );
     const result = res.result;
     stagingCarData.value = result;
-
+    console.log('暂存的', stagingCarData.value);
     setAddCarData(result);
   } catch (error) { }
 };
@@ -309,7 +311,7 @@ const getOrderShoppingList = async (id) => {
     const res = await proxy.$storeDispatch("fetchGetOrderShoppingList", id);
     const result = res.result;
     orderCarData.value = result;
-
+    console.log('订单购物单', orderCarData.value);
     setAddCarData(result, "playOrder");
   } catch (error) { }
 };
@@ -336,7 +338,7 @@ const setAddCarData = (result, type) => {
     const list = JSON.parse(JSON.stringify(addedCarDataResult));
     addedToCart.value.push(...list);
     // console.log(addedCarDataResult);
-    console.log(addedToCart);
+    // console.log(addedToCart);
   });
 };
 
@@ -533,7 +535,7 @@ const getOrderIdDetail = async (id) => {
     // 税率
     toolForm.taxRate = result.taxRate;
 
-    console.log(toolForm);
+    // console.log(toolForm);
   } catch (error) { }
 };
 
@@ -556,7 +558,7 @@ const printTypes = [
     value: 0,
   },
   {
-    label: "取消的菜品",
+    label: "取消菜品",
     value: 1,
   },
   {
@@ -577,7 +579,7 @@ const getOrderTippingList = async (id) => {
     if (!orderId) {
       return;
     }
-    const res = await proxy.$storeDispatch("fetchGetOrderTippingList", { orderId,});
+    const res = await proxy.$storeDispatch("fetchGetOrderTippingList", { orderId, });
     const result = res.result;
     tipData.value = result.slice(result.length - 1);
   } catch (error) { }
@@ -587,12 +589,25 @@ const printTypeVal = ref();
 watch(
   () => printTypeVal.value,
   (nVal) => {
-    console.log(nVal);
+    // console.log(nVal);
     if (nVal == 2) {
       changeDishes.value = JSON.parse(
         JSON.stringify(addedToCart.value.filter((d) => d.shopId))
       );
-    } else {
+    } else if (nVal == 1) {
+      console.log('取消菜品');
+      console.log(addedToCart.value);
+      const res = addedToCart.value.filter(item => item.shopId)
+      console.log(res);
+      const result = res.filter(item => item.shopId == routeQuery.shopId)
+      console.log('当前数据是', result);
+      addedToCart.value = result
+      console.log('要打印的数据', addedToCart.value);
+      latestDishes.value = addedToCart.value
+      kitchenPrint()
+
+    }
+    else {
       if (nVal == 3) {
         router.push({
           path: "/printLog",
@@ -630,18 +645,18 @@ const selectDishe = (item) => {
 
 // 选择分组
 const selectGroup = (group, isCheck) => {
-  console.log(group.data);
+  // console.log(group.data);
 
-  console.log(isCheck);
+  // console.log(isCheck);
   const ids = group.data.map((d) => d.shopId);
   if (isCheck) {
     const result = changeDishes.value.length
       ? group.data.filter((d) => !changeDishes.value.includes(d.shopId))
       : group.data;
 
-    console.log(ids);
-    console.log(result);
-    console.log(changeDishes.value);
+    // console.log(ids);
+    // console.log(result);
+    // console.log(changeDishes.value);
 
     changeDishes.value.push(...result);
   } else {
@@ -650,7 +665,7 @@ const selectGroup = (group, isCheck) => {
     );
   }
   group.select = !group.select;
-  console.log(changeDishes.value);
+  // console.log(changeDishes.value);
 };
 //跳转结账画面
 const goToCheckout = () => {
@@ -724,7 +739,7 @@ const printData = async (call) => {
       }
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     call();
   }
 };
@@ -742,8 +757,16 @@ const printDataWithClopod = async (call) => {
     if (printTypeVal.value == 0) {
       // 调用打印方法，参数0，1，2，代表要打印的场景
       // 厨房订单 0 ，删除菜品 1 调用该方法
+      console.log('kitchenPrint');
       kitchenPrint();
-    } else {
+    } else if (printTypeVal.value == 1) {
+      //取消菜品
+      console.log('取消菜品打印');
+      setTimeout(() => {
+        kitchenPrint()
+      }, 1000);
+    }
+    else {
       // 打印记录
       if (printTypeVal.value == 3) {
       } else {
@@ -753,13 +776,15 @@ const printDataWithClopod = async (call) => {
     }
   }
   catch (error) {
-    console.log(error);
+    // console.log(error);
     call();
   }
 };
 // 打印模板，需根据不同场景进行配置
 // 厨房打印
 const kitchenPrint = () => {
+  console.log(latestDishes.value);
+  if (!latestDishes.value) return
   let LODOP = getLodop()//调用getLodop获取LODOP对象
   LODOP.PRINT_INIT("")
   LODOP.SET_PRINT_PAGESIZE(3, "80mm", "5mm", "");
@@ -810,6 +835,10 @@ const kitchenPrint = () => {
       LODOP.ADD_PRINT_TEXT(top, 34, 260, 25, dishItemObj.name + "(" + name + ")");
       LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
       LODOP.SET_PRINT_STYLEA(0, "FontSize", 15);
+      // if (routeQuery.shopId) {
+      //   // 添加一条线条
+      LODOP.ADD_PRINT_SHAPE(1, top + 5, 50, 200, 1, 0, 1, "#000000");
+      // }
       for (let i = 0; i < dishItemObj.customDishesSpicesList.length; i++) {
         top += 25;
         LODOP.ADD_PRINT_TEXT(top, 34, 260, 25, "   " + dishItemObj.customDishesSpicesList[i].name);
@@ -829,10 +858,11 @@ const kitchenPrint = () => {
   // 指定打印机打印
   LODOP.SET_PRINTER_INDEX("Kitchen");
   // 弹窗预览界面，检查打印效果
-  //LODOP.PRINT_DESIGN();
-  //LODOP.PREVIEW();
+  console.log('弹出');
+  LODOP.PRINT_DESIGN();
+  LODOP.PREVIEW();
   // 直接打印
-  LODOP.PRINT();
+  // LODOP.PRINT();
 }
 // 前台打印
 const cashierPrint = (value) => {
@@ -881,7 +911,7 @@ const cashierPrint = (value) => {
     let dishItemObj = addedToCart.value[i];
     if (isEmpty.includes(dishItemObj.nameLanguage)) {
     } else {
-      console.log(dishItemObj);
+      // console.log(dishItemObj);
       LODOP.ADD_PRINT_TEXT(top, 5, 20, 25, dishItemObj.goodsQuantity);
       LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
       let name;
@@ -891,14 +921,10 @@ const cashierPrint = (value) => {
       //规格
       if (dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList.length != 0) {
         name = dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList[0].name
-        console.log(name);
         nameLanguage = dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList[0].nameLanguage
-        console.log(nameLanguage);
         price = dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList[0].price
-        console.log(price);
         if (!dishItemObj.discountPrice == "NaN") {
           discountPrice = dishItemObj.discountPrice == null ? "" : "(-" + dishItemObj.discountPrice + ")";
-          console.log(discountPrice);
         }
       }
 
@@ -917,7 +943,6 @@ const cashierPrint = (value) => {
       LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
       top += 60;
       subTotal += (Number(dishItemObj.goodsQuantity * (Number(dishItemObj.goodsPrice) + Number(price))));
-      console.log("餐费总计 " + subTotal);
     }
   }
   // 检查付款状态和金额
@@ -943,7 +968,6 @@ const cashierPrint = (value) => {
   let discountOrder = 0;
   // 整单现金打折
   if (toolForm.discount.cashDiscountMoney && !(toolForm.discount.cashDiscountMoney == 0)) {
-    console.log("line cashDiscountMoney " + toolForm.discount.cashDiscountMoney)
     discountOrder += toolForm.discount.cashDiscountMoney;
     if (!discountOrder == 0) {
       top += 30
@@ -957,13 +981,10 @@ const cashierPrint = (value) => {
   }
   // 整单百分比打折
   if (!isEmpty.includes(toolForm.discount.order.orderDiscountType) && !isEmpty.includes(toolForm.discount.order.orderDiscount)) {
-    console.log("line 863 " + toolForm.discount.order.orderDiscountType)
-    console.log("line 863 " + toolForm.discount.order.orderDiscount)
     if (toolForm.discount.order.orderDiscountType == "PERCENT") {
       discountOrder += subTotal * (100 - toolForm.discount.order.orderDiscount) / 100
       if (!discountOrder == 0) {
         top += 30
-        console.log("line 908 discountOrder " + discountOrder)
         LODOP.ADD_PRINT_TEXT(top, 72, 65, 25, "Discount:");
         LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
         LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
@@ -979,12 +1000,9 @@ const cashierPrint = (value) => {
   let serviceFee = 0
   if (!isEmpty.includes(toolForm.service.serviceCharge && !isEmpty.includes(toolForm.service.serviceChargeType))) {
     if (!isEmpty.includes(toolForm.service.serviceChargeType) && toolForm.service.serviceChargeType == "PERCENT") {
-      console.log("line 964 serviceCharge PERCENT DISCOUNT " + toolForm.service.serviceCharge)
       serviceFee += (subTotal - discountOrder) * toolForm.service.serviceCharge / 100
-      console.log("line 964 serviceCharge PERCENT DISCOUNT " + serviceFee)
     } else {
       serviceFee += toolForm.service.serviceCharge;
-      console.log("line 968 serviceCharge cash DISCOUNT " + serviceFee)
     }
     if (!serviceFee == 0) {
       top += 30
@@ -1009,10 +1027,10 @@ const cashierPrint = (value) => {
 
   // 小费计算
   let tip = 0
-  if (!tipData.value.length == 0){
+  if (!tipData.value.length == 0) {
     tip += tipData.value[0].payAmount
     top += 30
-    LODOP.ADD_PRINT_TEXT(top, 72, 70, 25,"Tips");
+    LODOP.ADD_PRINT_TEXT(top, 72, 70, 25, "Tips");
     LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
     LODOP.SET_PRINT_STYLEA(0, "FontSize", 10);
     LODOP.ADD_PRINT_TEXT(top, 215, 55, 25, "$" + tip);
@@ -1121,7 +1139,6 @@ const downLoadPrintLog = () => {
 };
 
 // 刷新打印记录列表
-// ref
 const printLogRef = ref();
 
 const refreshPrintLogView = ref(true);
@@ -1168,20 +1185,27 @@ watch(() => proxy.$route.path, (nVal, old) => {
     router.go(-1)
   }
 })
-console.log(proxy.$route.path)
-
+//打印取消菜品
+const printCancel = () => {
+  if (routeQuery.shopId) {
+  }
+}
 onMounted(async () => {
   const id = routeQuery.orderId;
+  // 查询小费
   await getOrderTippingList(id);
+  // 查询订单详情
   await getOrderIdDetail(id);
+  // 暂存的购物车清单
   await getTemporaryOrderShoppingList(id);
+  // 订单购物单列表
   await getOrderShoppingList(id);
+  // 订单明细
   await getOrderAAPayDetail(id);
-
   printTypeVal.value = Number(routeQuery.type || 0);
 });
 </script>
-  
+
 <style lang="scss" scoped>
 $grayColor: #fdfdfd;
 
@@ -1498,4 +1522,3 @@ $grayColor: #fdfdfd;
   }
 }
 </style>
-  

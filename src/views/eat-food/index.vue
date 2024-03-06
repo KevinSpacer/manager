@@ -738,7 +738,7 @@
           {{ $LANG_TEXT("自定义菜品") }}
         </el-button>
         <!-- 取消菜品  -->
-        <el-button :disabled="isInPay" v-if="proxy.$isUseAuth('自定义菜品')" @click.stop="deleteDishesReason">
+        <el-button :disabled="isInPay" v-if="proxy.$isUseAuth('自定义菜品')" type="danger" @click.stop="deleteDishesReason">
           <el-icon>
             <Delete />
           </el-icon>
@@ -807,7 +807,10 @@ const isOrdered = computed(() => {
   // 已有下单&&无暂存
   return OCData.length && !TCData.length;
 });
-
+//当前购物车选中的菜品
+const curData = reactive({
+  curSelectedshopId:''
+})
 // 携带参数
 const routeParams = reactive({
   orderId: "",
@@ -828,7 +831,10 @@ const otherPriceType = {
   QUOTA: "定额",
   PERCENT: "百分比",
 };
-
+// 取消菜品数据
+const cancelData = ref({
+})
+const cancelShopId = ref('')
 // 全局模块
 const { eatFoodModule, mainModule } = proxy.$usePiniaModule();
 // 已加入购物车
@@ -1280,8 +1286,9 @@ const deleteDishesReason = async () => {
 const deleteDishes = async () => {
   const index = chooseCarGoodsIndex.value;
   const item = addedToCart.value[index];
-  // console.log(item)
 
+  cancelData.value = item
+  console.log(cancelData.value)
   if (item.shopId) {
     await cancelDishes(item.shopId);
     addedToCart.value.splice(index, 1);
@@ -1573,9 +1580,10 @@ watch(
 const updateOrderDishes = async (params) => {
   await proxy.$storeDispatch("fetchEditOrderShoppingGoods", params);
 };
-
+// 点击购物车某个菜品
 const changeCarListItem = (index) => {
-  console.log(addedToCart.value[index])
+  console.log('选中的菜品',addedToCart.value[index].shopId)
+  curData.curSelectedshopId = addedToCart.value[index].shopId
   condiments.value = addedToCart.value[index] && addedToCart.value[index].customDishesSpicesList || []
   if (chooseCarGoodsIndex.value === "") {
     chooseCarGoodsIndex.value = index;
@@ -1594,7 +1602,6 @@ const chooseCartData = computed(() => {
   const index = chooseCarGoodsIndex.value;
   if (!isEmpty.includes(index)) {
     const item = addedToCart.value[index] || {};
-
     return item;
   } else {
     return {};
@@ -1883,11 +1890,14 @@ const toolDialogConfirm = async (call) => {
       break;
     //删除一个菜品
     case "cancelingDish":
-      console.log('取消订单');
-      deleteDishes()
+      console.log('取消菜品');
+      cancelData.value = addedToCart.value[chooseCarGoodsIndex.value];
+      cancelShopId.value = cancelData.value.shopId
+      console.log('需要取消的菜id',cancelShopId.value);
       closeToolDialog(call);
       otherDialogRef.value.closeDialog();
-      //printJump()
+      // 跳转打印
+      printJump()
       break;
   }
 };
@@ -3034,8 +3044,14 @@ const init = async () => {
 
 // 跳转打印
 const printJump = () => {
-  router.push({ path: "/printMod", query: { orderId: routeParams.orderId } });
+  if(cancelShopId.value){
+    router.push({ path: "/printMod", query: { orderId: routeParams.orderId,shopId:cancelShopId.value,type: 1 }});
+  }else {
+    router.push({ path: "/printMod", query: { orderId: routeParams.orderId } });
+  }
+  
 };
+
 
 // 全局取消
 const allHandCancel = () => {
@@ -3435,9 +3451,9 @@ $grayColor: #fdfdfd;
   display: grid;
   grid-template-columns: repeat(2, 150px);
   justify-content: center;
-  grid-template-rows: repeat(4, 60px);
+  grid-template-rows: repeat(5, 60px);
 
-  button {
+  .el-button {
     width: 95%;
     height: 90%;
     margin: 2.5%;
