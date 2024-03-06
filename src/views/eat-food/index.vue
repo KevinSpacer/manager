@@ -661,8 +661,8 @@
           (!isEmpty.includes(chooseCarGoodsIndex)
             ? (chooseCartData.isDiscount == 'NO' ||
               !chooseCartData.isDiscount) & !!routeParams.orderId
-            : false) ||
-          isInPay
+            : false) 
+            // || isInPay
           " @click.stop="openToolDialog('discount')">
           <el-icon>
             <PriceTag />
@@ -749,7 +749,7 @@
           {{ $LANG_TEXT("自定义菜品") }}
         </el-button>
         <!-- 取消菜品  -->
-        <el-button :disabled="isInPay" v-if="proxy.$isUseAuth('自定义菜品')" type="danger" @click.stop="deleteDishesReason">
+        <el-button v-if="proxy.$isUseAuth('自定义菜品')" type="danger" @click.stop="deleteDishes">
           <el-icon>
             <Delete />
           </el-icon>
@@ -1306,6 +1306,7 @@ const deleteDishes = async () => {
   } else {
     addedToCart.value.splice(index, 1);
   }
+  openToolDialog("cancelingDish")
 };
 //删除调味品
 const deleteCondiment = (value, index) => {
@@ -1903,9 +1904,9 @@ const toolDialogConfirm = async (call) => {
     //删除一个菜品
     case "cancelingDish":
       console.log('取消菜品');
-      cancelData.value = addedToCart.value[chooseCarGoodsIndex.value];
+      //cancelData.value = addedToCart.value[chooseCarGoodsIndex.value];
       cancelShopId.value = cancelData.value.shopId
-      console.log('需要取消的菜id', cancelShopId.value);
+      //console.log('需要取消的菜id', cancelShopId.value);
       closeToolDialog(call);
       otherDialogRef.value.closeDialog();
       // 跳转打印
@@ -3057,7 +3058,8 @@ const init = async () => {
 // 跳转打印
 const printJump = () => {
   if (cancelShopId.value) {
-    router.push({ path: "/printMod", query: { orderId: routeParams.orderId, shopId: cancelShopId.value, type: 1 } });
+    let dishName = cancelData.value.name + "(" + cancelData.value.dishesSpecificationList[0].dishesSpecificationAttributeList[0].name + ")"
+    router.push({ path: "/printMod", query: { orderId: routeParams.orderId, dishName: dishName, type: 1,autoPrinted:1 }});
   } else {
     router.push({ path: "/printMod", query: { orderId: routeParams.orderId } });
   }

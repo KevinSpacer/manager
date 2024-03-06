@@ -594,20 +594,7 @@ watch(
       changeDishes.value = JSON.parse(
         JSON.stringify(addedToCart.value.filter((d) => d.shopId))
       );
-    } else if (nVal == 1) {
-      console.log('取消菜品');
-      console.log(addedToCart.value);
-      const res = addedToCart.value.filter(item => item.shopId)
-      console.log(res);
-      const result = res.filter(item => item.shopId == routeQuery.shopId)
-      console.log('当前数据是', result);
-      addedToCart.value = result
-      console.log('要打印的数据', addedToCart.value);
-      latestDishes.value = addedToCart.value
-      kitchenPrint()
-
-    }
-    else {
+    } else {
       if (nVal == 3) {
         router.push({
           path: "/printLog",
@@ -757,13 +744,12 @@ const printDataWithClopod = async (call) => {
     if (printTypeVal.value == 0) {
       // 调用打印方法，参数0，1，2，代表要打印的场景
       // 厨房订单 0 ，删除菜品 1 调用该方法
-      console.log('kitchenPrint');
       kitchenPrint();
     } else if (printTypeVal.value == 1) {
       //取消菜品
       console.log('取消菜品打印');
       setTimeout(() => {
-        kitchenPrint()
+        deleteDish()
       }, 1000);
     }
     else {
@@ -781,10 +767,55 @@ const printDataWithClopod = async (call) => {
   }
 };
 // 打印模板，需根据不同场景进行配置
+// 删除菜品打印
+const deleteDish = () => {
+  let LODOP = getLodop()//调用getLodop获取LODOP对象
+  LODOP.PRINT_INIT("")
+  LODOP.SET_PRINT_PAGESIZE(3, "80mm", "5mm", "");
+  // 餐厅名字
+  LODOP.ADD_PRINT_TEXT(30, 0, 285, 50, roomDetail.value.name);
+  LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 15);
+  LODOP.SET_PRINT_STYLEA(0, "Alignment", 2);
+  LODOP.SET_PRINT_STYLEA(0, "Bold", 1);
+  // 用餐类型
+  LODOP.ADD_PRINT_TEXT(22, 227, 37, 20, orderDetail.value.type == "TAKE_FOOD" ? "等取" : "外送");
+  // 餐厅地址
+  // 餐厅电话
+  // 餐厅网址, 没有不显示
+  // 分割线
+  LODOP.ADD_PRINT_LINE(60, 0, 60, 275, 2, 1);
+  // 打印时间
+  let date = new Date().toLocaleString();
+  LODOP.ADD_PRINT_TEXT(65, 11, 144, 15, date);
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 8);
+  // 服務員
+  LODOP.ADD_PRINT_TEXT(65, 190, 100, 20, routeParams.waiterName);
+  // 当日订单号码
+  LODOP.ADD_PRINT_TEXT(85, 14, 128, 30, "#" + orderDetail.value.daySerialNo);
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 15);
+  LODOP.ADD_PRINT_LINE(110, -0, 110, 293, 0, 2);
+  // Loop 菜品数量，名称
+  let top = 120;
+  LODOP.ADD_PRINT_TEXT(top, 34, 260, 25, routeQuery.dishName);
+  LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
+  LODOP.SET_PRINT_STYLEA(0, "FontSize", 15);
+  LODOP.ADD_PRINT_LINE(top + 10, 30, top + 10, 293, 0, 3);
+  top += 25;
+  // 指定打印机打印
+  LODOP.SET_PRINTER_INDEX("Kitchen");
+  // 弹窗预览界面，检查打印效果
+  //console.log('弹出');
+  //LODOP.PRINT_DESIGN();
+  //LODOP.PREVIEW();
+  // 直接打印
+  LODOP.PRINT();
+}
+
 // 厨房打印
 const kitchenPrint = () => {
-  console.log(latestDishes.value);
-  if (!latestDishes.value) return
+  // console.log(latestDishes.value);
+  // if (!latestDishes.value) return
   let LODOP = getLodop()//调用getLodop获取LODOP对象
   LODOP.PRINT_INIT("")
   LODOP.SET_PRINT_PAGESIZE(3, "80mm", "5mm", "");
@@ -822,7 +853,7 @@ const kitchenPrint = () => {
       let name;
       let nameLanguage
       //  规格
-      if (dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList.length != 0) {
+      if ((!dishItemObj.dishesSpecificationList.length == 0) && (!dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList.length == 0)) {
         name = dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList[0].name
         nameLanguage = dishItemObj.dishesSpecificationList[0].dishesSpecificationAttributeList[0].nameLanguage
       }
@@ -835,10 +866,6 @@ const kitchenPrint = () => {
       LODOP.ADD_PRINT_TEXT(top, 34, 260, 25, dishItemObj.name + "(" + name + ")");
       LODOP.SET_PRINT_STYLEA(0, "FontName", "times New Roman");
       LODOP.SET_PRINT_STYLEA(0, "FontSize", 15);
-      // if (routeQuery.shopId) {
-      //   // 添加一条线条
-      LODOP.ADD_PRINT_SHAPE(1, top + 5, 50, 200, 1, 0, 1, "#000000");
-      // }
       for (let i = 0; i < dishItemObj.customDishesSpicesList.length; i++) {
         top += 25;
         LODOP.ADD_PRINT_TEXT(top, 34, 260, 25, "   " + dishItemObj.customDishesSpicesList[i].name);
@@ -858,11 +885,10 @@ const kitchenPrint = () => {
   // 指定打印机打印
   LODOP.SET_PRINTER_INDEX("Kitchen");
   // 弹窗预览界面，检查打印效果
-  console.log('弹出');
-  LODOP.PRINT_DESIGN();
-  LODOP.PREVIEW();
+  //LODOP.PRINT_DESIGN();
+  //LODOP.PREVIEW();
   // 直接打印
-  // LODOP.PRINT();
+  LODOP.PRINT();
 }
 // 前台打印
 const cashierPrint = (value) => {
