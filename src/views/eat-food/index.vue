@@ -1390,12 +1390,12 @@ const orderSubmitData = computed(() => {
         // 规格类型（SINGLE:单规格、MULTI:多规格）
         const specificationType = item.specificationType;
         // 处理规格
-        if (specificationType == "MULTI") {
+       // if (specificationType == "MULTI") {
           result.dishesSpecificationList = getParentChildsIds(
             item.dishesSpecificationList || [],
             { childName: "dishesSpecificationAttributeList" }
           );
-        }
+        //}
 
         shoppingGoodsList.push(result);
       } else if (goodsType == "CUSTOM_DISHES") {
@@ -1429,6 +1429,8 @@ const orderSubmitData = computed(() => {
 // playOrder、storeOrder
 const stagingOrder = async (params, type) => {
   console.log("this is line 1380 " + params.value);
+  console.log("this is line 1380 " + type);
+  console.log("this is line 1380 " + orderSubmitData.value);
   if (!addedToCart.value.length) {
     proxy.$message({
       type: "warning",
