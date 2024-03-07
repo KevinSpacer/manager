@@ -9,6 +9,7 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = {
   configureWebpack: {
+    devtool:'source-map',
     module: {
       rules: [{
         test: /\.mhs$/,
